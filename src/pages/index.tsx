@@ -10,7 +10,7 @@ export default function LandingPage() {
                 display: "flex",
                 flexDirection: "column",
                 height: "100vh",
-                padding: "10vw",
+                paddingX: "10vw",
                 justifyContent: "center",
                 alignItems: "flex-start",
                 userSelect: "none",
