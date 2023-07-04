@@ -1,5 +1,5 @@
 import {Chip, Divider, List, ListItem, ListItemIcon, ListItemText, Pagination, Paper, Typography} from "@mui/material";
-import {Crop} from "@mui/icons-material";
+import Crop from "@mui/icons-material/Crop";
 import dayjs from "dayjs";
 import {useState} from "react";
 import {CropData} from "@/types";

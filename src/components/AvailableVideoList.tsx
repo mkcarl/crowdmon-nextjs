@@ -10,7 +10,7 @@ import {
     Paper,
     Typography,
 } from "@mui/material";
-import { VideoLibrary } from "@mui/icons-material";
+import VideoLibrary from "@mui/icons-material/VideoLibrary";
 import { useEffect, useState } from "react";
 
 

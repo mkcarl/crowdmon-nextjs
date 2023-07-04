@@ -1,8 +1,6 @@
 import {useRouter} from "next/router";
 import {Box, Grid, Typography} from "@mui/material";
 import Navbar from "@/components/Navbar";
-import {ContributionHistory} from "@/components/ContributionHistory";
-import {ContributionProportion} from "@/components/ContributionProportion";
 import {ContributionDetailsList} from "@/components/ContributionDetailsList";
 import {MongoClient} from "mongodb";
 import {configDotenv} from "dotenv";

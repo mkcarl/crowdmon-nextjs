@@ -6,7 +6,8 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import { Home, Leaderboard, Logout } from "@mui/icons-material";
+import Home from "@mui/icons-material/Home";
+import Leaderboard from "@mui/icons-material/Leaderboard";
 
 export default function Navbar() {
     const handleLogout = () => {
