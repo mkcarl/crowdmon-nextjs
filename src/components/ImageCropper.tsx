@@ -25,13 +25,8 @@ export function ImageCropper(props: Props){
     const imgRef = useRef<HTMLImageElement>();
 
     useEffect(() => {
-        console.log(props)
-    }, [props]);
-
-    useEffect(() => {
         if (refresh)
             props.onRefresh();
-        setRefresh(false)
     }, [refresh]);
 
     const sendCrop = async (crop:PixelCrop, videoId:string, imageId:string, contributor:string, image:string) => {
@@ -152,6 +147,8 @@ export function ImageCropper(props: Props){
             width: e.target.naturalWidth,
             height: e.target.naturalHeight,
         });
+        setRefresh(false)
+
     }
 
 
@@ -274,7 +271,7 @@ export function ImageCropper(props: Props){
                                 }}
                                 color={"secondary"}
                                 variant={"contained"}
-                                disabled={props.completed}
+                                disabled={props.completed || refresh }
                             >
                                 skip
                             </Button>
@@ -282,7 +279,7 @@ export function ImageCropper(props: Props){
                                 onClick={onClickCrop}
                                 color={"primary"}
                                 variant={"contained"}
-                                disabled={props.completed}
+                                disabled={props.completed || refresh }
                             >
                                 Crop
                             </Button>

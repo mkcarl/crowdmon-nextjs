@@ -50,9 +50,7 @@ export async function getServerSideProps() {
     const dataInCache = await redisClient.exists('cropStatus')
     if (dataInCache) {
         cropStatus = await redisClient.hgetall('cropStatus')
-        console.log('got from cache')
     } else {
-        console.log('fucked up')
         const client = new MongoClient(process.env.MONGODB_URI!);
         const db = client.db('crowdmon');
         const allVideos = await db.collection('videos').find().toArray();

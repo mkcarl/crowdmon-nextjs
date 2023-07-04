@@ -74,7 +74,6 @@ export async function getServerSideProps(context:any){
         }
     }
     const frame = JSON.parse((await redis.lpop(`frameList:${id}`))!);
-    console.log('json:', frame)
     return {
         props: {
             frame,
