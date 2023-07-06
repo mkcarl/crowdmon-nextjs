@@ -54,7 +54,7 @@ export function ImageCropper(props: Props){
         });
     };
 
-        const sendSkipCrop = async (videoId:string, imageId:string, contributor:string) => {
+    const sendSkipCrop = async (videoId:string, imageId:string, contributor:string) => {
         await fetch("/api/crop", {
             method: "POST",
             body: JSON.stringify(
@@ -264,7 +264,6 @@ export function ImageCropper(props: Props){
                                         props.frame?.name,
                                         props.contributorId
                                     ).then(
-                                        () => setRefresh(true),
                                         () => console.log("send crop failed")
                                     );
                                     setRefresh(true);
