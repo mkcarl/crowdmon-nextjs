@@ -9,6 +9,7 @@ export default function App({Component, pageProps}: AppProps) {
     return (
         <>
             <Head>
+                <link href={'favicon.ico'}/>
                 <title>Crowdmon</title>
             </Head>
             <ThemeProvider theme={crowdmonTheme}>
