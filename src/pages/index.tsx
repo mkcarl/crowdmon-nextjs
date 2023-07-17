@@ -22,7 +22,7 @@ export default function LandingPage() {
               crowd-sourcing for Paimon dataset
             </Typography>
             <Button
-                href={"/homepage"}
+                href={"/home"}
                 variant={"contained"}
                 color={"secondary"}
             >

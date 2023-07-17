@@ -13,7 +13,7 @@ interface HomepageProp {
     cropStatus: Record<string, string>
 }
 
-export default function Homepage(props: HomepageProp) {
+export default function Index(props: HomepageProp) {
     return (
         <>
             <Navbar/>
