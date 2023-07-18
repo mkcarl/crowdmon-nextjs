@@ -1,5 +1,6 @@
 import {
     AppBar,
+    Chip,
     IconButton,
     Link,
     Toolbar,
@@ -9,13 +10,14 @@ import {
 import Home from '@mui/icons-material/Home'
 import Leaderboard from '@mui/icons-material/Leaderboard'
 import Logout from '@mui/icons-material/Logout'
-import { signOut } from '@firebase/auth'
-import { auth } from '@/firebase'
+import { getAuth, signOut } from '@firebase/auth'
+import { firebaseApp } from '@/firebase'
 import { useRouter } from 'next/router'
+import { useAuthState } from 'react-firebase-hooks/auth'
 
 export default function Navbar() {
     const router = useRouter()
-    const firebaseAuth = auth
+    const firebaseAuth = getAuth(firebaseApp)
     const handleLogout = async () => {
         await signOut(firebaseAuth)
         await router.push('/')
@@ -37,6 +39,11 @@ export default function Navbar() {
                         Crowdmon
                     </Link>
                 </Typography>
+                <Chip
+                    variant={'filled'}
+                    label={firebaseAuth.currentUser?.displayName}
+                    color={'secondary'}
+                />
                 <Tooltip title={'Home'}>
                     <IconButton href={'/home'}>
                         <Home sx={{ color: 'primary.contrastText' }} />
