@@ -14,10 +14,8 @@ import {
     PixelCrop,
     ReactCrop,
 } from 'react-image-crop'
-import Redis from 'ioredis'
-import { MutableRefObject, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import 'react-image-crop/dist/ReactCrop.css'
-import useEnhancedEffect from '@mui/utils/useEnhancedEffect'
 
 interface Props {
     videoId: string

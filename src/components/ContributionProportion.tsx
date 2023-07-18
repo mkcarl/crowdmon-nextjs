@@ -1,5 +1,5 @@
-import {Box, Paper, Typography} from "@mui/material";
-import {Doughnut} from "react-chartjs-2";
+import { Box, Paper, Typography } from '@mui/material'
+import { Doughnut } from 'react-chartjs-2'
 
 import {
     ArcElement,
@@ -13,8 +13,7 @@ import {
     TimeScale,
     Title,
     Tooltip,
-} from "chart.js";
-
+} from 'chart.js'
 
 Chart.register(
     ArcElement,
@@ -27,14 +26,14 @@ Chart.register(
     TimeScale,
     CategoryScale,
     BarElement
-);
+)
 
 interface ContributionDoughnutChartData {
-    labels: string[],
+    labels: string[]
     datasets: {
-        label: string,
-        backgroundColor: string[],
-        borderColor: string[],
+        label: string
+        backgroundColor: string[]
+        borderColor: string[]
         data: number[]
     }[]
 }
@@ -44,28 +43,25 @@ interface ContributionProportionProps {
 }
 
 export function ContributionProportion(props: ContributionProportionProps) {
-
     return (
         <Paper elevation={1}>
             <Box
-                component={"div"}
+                component={'div'}
                 sx={{
-                    padding: "1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
+                    padding: '1rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
                 }}
             >
-                <Typography variant={"h4"}>
-                    Contributions per video
-                </Typography>
+                <Typography variant={'h4'}>Contributions per video</Typography>
                 <Box
-                    component={"div"}
+                    component={'div'}
                     sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        width: "100%",
-                        height: "30vh",
+                        display: 'flex',
+                        justifyContent: 'center',
+                        width: '100%',
+                        height: '30vh',
                     }}
                 >
                     <Doughnut
@@ -77,5 +73,5 @@ export function ContributionProportion(props: ContributionProportionProps) {
                 </Box>
             </Box>
         </Paper>
-    );
+    )
 }

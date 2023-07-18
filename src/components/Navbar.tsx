@@ -13,7 +13,6 @@ import Logout from '@mui/icons-material/Logout'
 import { getAuth, signOut } from '@firebase/auth'
 import { firebaseApp } from '@/firebase'
 import { useRouter } from 'next/router'
-import { useAuthState } from 'react-firebase-hooks/auth'
 
 export default function Navbar() {
     const router = useRouter()

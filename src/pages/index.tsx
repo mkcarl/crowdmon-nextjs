@@ -1,5 +1,5 @@
 import { Box, Button, Grid, Typography } from '@mui/material'
-import { getAuth, signInWithPopup, GoogleAuthProvider } from '@firebase/auth'
+import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { useRouter } from 'next/router'
 import { firebaseApp } from '@/firebase'

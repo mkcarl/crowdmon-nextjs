@@ -1,5 +1,4 @@
 import Navbar from '@/components/Navbar'
-import { cookies } from 'next/headers'
 import { Box, Grid, Typography } from '@mui/material'
 import { ImageCropper } from '@/components/ImageCropper'
 import Redis from 'ioredis'
@@ -8,6 +7,7 @@ import { MongoClient } from 'mongodb'
 import { useRouter } from 'next/router'
 import _ from 'lodash'
 import useAuth from '@/hooks/useAuth'
+
 configDotenv()
 
 interface Props {
