@@ -8,10 +8,17 @@ import {
 } from '@mui/material'
 import Home from '@mui/icons-material/Home'
 import Leaderboard from '@mui/icons-material/Leaderboard'
+import Logout from '@mui/icons-material/Logout'
+import { signOut } from '@firebase/auth'
+import { auth } from '@/firebase'
+import { useRouter } from 'next/router'
 
 export default function Navbar() {
-    const handleLogout = () => {
-        alert('logout')
+    const router = useRouter()
+    const firebaseAuth = auth
+    const handleLogout = async () => {
+        await signOut(firebaseAuth)
+        await router.push('/')
     }
 
     return (
@@ -40,11 +47,11 @@ export default function Navbar() {
                         <Leaderboard sx={{ color: 'primary.contrastText' }} />
                     </IconButton>
                 </Tooltip>
-                {/*<Tooltip title={"Logout"}>*/}
-                {/*    <IconButton onClick={handleLogout}>*/}
-                {/*        <Logout sx={{ color: "primary.contrastText" }} />*/}
-                {/*    </IconButton>*/}
-                {/*</Tooltip>*/}
+                <Tooltip title={'Logout'}>
+                    <IconButton onClick={handleLogout}>
+                        <Logout sx={{ color: 'primary.contrastText' }} />
+                    </IconButton>
+                </Tooltip>
             </Toolbar>
         </AppBar>
     )

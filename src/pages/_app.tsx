@@ -1,15 +1,15 @@
 import '@/styles/globals.css'
-import type {AppProps} from 'next/app'
-import React from "react";
-import {crowdmonTheme} from "@/styles/crowdmon-styles";
-import {ThemeProvider} from "@mui/material";
-import Head from "next/head";
+import type { AppProps } from 'next/app'
+import React, { useEffect } from 'react'
+import { crowdmonTheme } from '@/styles/crowdmon-styles'
+import { ThemeProvider } from '@mui/material'
+import Head from 'next/head'
 
-export default function App({Component, pageProps}: AppProps) {
+export default function App({ Component, pageProps }: AppProps) {
     return (
         <>
             <Head>
-                <link href={'favicon.ico'}/>
+                <link href={'favicon.ico'} />
                 <title>Crowdmon</title>
             </Head>
             <ThemeProvider theme={crowdmonTheme}>
@@ -17,5 +17,4 @@ export default function App({Component, pageProps}: AppProps) {
             </ThemeProvider>
         </>
     )
-
 }

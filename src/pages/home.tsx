@@ -2,6 +2,11 @@ import Navbar from '@/components/Navbar'
 import { Box, Grid, Typography } from '@mui/material'
 import { AnnotationOption } from '@/types/home'
 import AnnotationCard from '@/components/home/AnnotationCard'
+import { firebaseApp } from '@/firebase'
+import { getAuth } from '@firebase/auth'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { useRouter } from 'next/router'
+import useAuth from '@/hooks/useAuth'
 
 const annotationOptions: AnnotationOption[] = [
     {
@@ -19,6 +24,8 @@ const annotationOptions: AnnotationOption[] = [
 ]
 
 export default function Home() {
+    useAuth()
+
     return (
         <Box
             sx={{
