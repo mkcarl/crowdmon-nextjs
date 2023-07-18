@@ -15,7 +15,6 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { GetStaticProps } from 'next'
 import Link from 'next/link'
 import { MongoClient } from 'mongodb'
-import { auth } from '@/firebase'
 import useAuth from '@/hooks/useAuth'
 
 dayjs.extend(relativeTime)

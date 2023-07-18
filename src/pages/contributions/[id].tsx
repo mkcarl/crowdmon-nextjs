@@ -5,7 +5,6 @@ import { ContributionDetailsList } from '@/components/ContributionDetailsList'
 import { MongoClient } from 'mongodb'
 import { configDotenv } from 'dotenv'
 import { GetServerSidePropsContext } from 'next'
-import { auth } from '@/firebase'
 import useAuth from '@/hooks/useAuth'
 
 configDotenv()

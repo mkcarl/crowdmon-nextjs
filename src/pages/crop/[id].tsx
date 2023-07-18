@@ -7,7 +7,6 @@ import { configDotenv } from 'dotenv'
 import { MongoClient } from 'mongodb'
 import { useRouter } from 'next/router'
 import _ from 'lodash'
-import { auth } from '@/firebase'
 import useAuth from '@/hooks/useAuth'
 configDotenv()
 

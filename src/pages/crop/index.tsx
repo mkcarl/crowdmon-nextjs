@@ -16,7 +16,6 @@ interface HomepageProp {
 
 export default function Index(props: HomepageProp) {
     const user = useAuth()
-    console.log(user)
 
     return (
         <>
