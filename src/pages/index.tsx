@@ -1,27 +1,28 @@
 import { Box, Button, Grid, Typography } from '@mui/material'
 import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth'
-import { useAuthState } from 'react-firebase-hooks/auth'
+import { useAuthState, useSignInWithGoogle } from 'react-firebase-hooks/auth'
 import { useRouter } from 'next/router'
-import { firebaseApp } from '@/firebase'
+import { firebaseApp, firebaseAuth } from '@/firebase'
+import { useEffect } from 'react'
+import Loading from '@/components/Loading'
 
 export default function LandingPage() {
-    const provider = new GoogleAuthProvider()
-    const auth = getAuth(firebaseApp)
-    const [user, loading] = useAuthState(auth)
+    const [user, loading, userError] = useAuthState(firebaseAuth)
+    const [signInWithGoogle, _, __, loginError] =
+        useSignInWithGoogle(firebaseAuth)
     const router = useRouter()
 
     if (loading) {
-        return <Box>Loading...</Box>
+        return <Loading />
     }
 
     if (user) {
         router.push('/home')
-        return <Box>Loading...</Box>
+        return <Loading />
     }
 
-    const signInWithGoogle = async () => {
-        const results = await signInWithPopup(auth, provider)
-        console.log(results)
+    const handleOnLogin = async () => {
+        const results = await signInWithGoogle()
     }
 
     return (
@@ -46,7 +47,7 @@ export default function LandingPage() {
                     <Button
                         variant={'contained'}
                         color={'secondary'}
-                        onClick={signInWithGoogle}
+                        onClick={handleOnLogin}
                     >
                         Get started
                     </Button>

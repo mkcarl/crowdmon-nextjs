@@ -6,7 +6,10 @@ import { configDotenv } from 'dotenv'
 import { MongoClient } from 'mongodb'
 import { useRouter } from 'next/router'
 import _ from 'lodash'
-import useAuth from '@/hooks/useAuth'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { firebaseAuth } from '@/firebase'
+import { useEffect } from 'react'
+import Loading from '@/components/Loading'
 
 configDotenv()
 
@@ -21,8 +24,19 @@ interface Props {
 }
 
 export default function Crop(props: Props) {
-    useAuth()
+    const [user, loading, error] = useAuthState(firebaseAuth)
     const router = useRouter()
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/')
+        }
+    }, [user])
+
+    if (loading || !user) {
+        return <Loading />
+    }
+
     return (
         <Box component={'div'}>
             <Navbar />
