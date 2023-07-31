@@ -7,8 +7,14 @@ import {
     CardMedia,
     Typography,
 } from '@mui/material'
+import { useRouter } from 'next/router'
 
 export default function AnnotationCard(props: AnnotationOption) {
+    const router = useRouter()
+    const handleOnClick = () => {
+        router.push(props.href)
+    }
+
     return (
         <Card
             sx={{
@@ -27,7 +33,11 @@ export default function AnnotationCard(props: AnnotationOption) {
                 </Typography>
             </CardContent>
             <CardActions>
-                <Button size={'small'} color={'primary'} href={props.href}>
+                <Button
+                    size={'small'}
+                    color={'primary'}
+                    onClick={handleOnClick}
+                >
                     Select
                 </Button>
             </CardActions>
