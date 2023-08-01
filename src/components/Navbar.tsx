@@ -15,14 +15,18 @@ import { getAuth, signOut } from '@firebase/auth'
 import { firebaseApp, firebaseAuth } from '../lib/firebase'
 import { useRouter } from 'next/router'
 import { useAuthState, useSignOut } from 'react-firebase-hooks/auth'
+import { useEffect } from 'react'
+import { useCookies } from 'react-cookie'
 
 export default function Navbar() {
     const router = useRouter()
     const [signOut, loading, error] = useSignOut(firebaseAuth)
     const [user, userLoading, userError] = useAuthState(firebaseAuth)
+    const [usernameCookies, _, removeUsernameCookies] = useCookies(['username'])
 
     const handleLogout = async () => {
         await signOut()
+        removeUsernameCookies('username')
         await router.push('/')
     }
 
@@ -44,7 +48,7 @@ export default function Navbar() {
                 </Typography>
                 <Chip
                     variant={'filled'}
-                    label={user?.displayName ?? 'Loading...'}
+                    label={usernameCookies.username ?? 'Loading...'}
                     color={'secondary'}
                 />
                 <Tooltip title={'Home'}>
