@@ -11,7 +11,7 @@ import Home from '@mui/icons-material/Home'
 import Leaderboard from '@mui/icons-material/Leaderboard'
 import Logout from '@mui/icons-material/Logout'
 import { getAuth, signOut } from '@firebase/auth'
-import { firebaseApp } from '@/firebase'
+import { firebaseApp } from '../lib/firebase'
 import { useRouter } from 'next/router'
 
 export default function Navbar() {

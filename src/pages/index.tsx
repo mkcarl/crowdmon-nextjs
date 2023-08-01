@@ -1,9 +1,7 @@
 import { Box, Button, Grid, Typography } from '@mui/material'
-import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth'
 import { useAuthState, useSignInWithGoogle } from 'react-firebase-hooks/auth'
 import { useRouter } from 'next/router'
-import { firebaseApp, firebaseAuth } from '@/firebase'
-import { useEffect } from 'react'
+import { firebaseAuth } from '@/lib/firebase'
 import Loading from '@/components/Loading'
 
 export default function LandingPage() {

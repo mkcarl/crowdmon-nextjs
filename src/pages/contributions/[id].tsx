@@ -6,7 +6,7 @@ import { MongoClient } from 'mongodb'
 import { configDotenv } from 'dotenv'
 import { GetServerSidePropsContext } from 'next'
 import { useAuthState } from 'react-firebase-hooks/auth'
-import { firebaseAuth } from '@/firebase'
+import { firebaseAuth } from '@/lib/firebase'
 import { useEffect } from 'react'
 import Loading from '@/components/Loading'
 
