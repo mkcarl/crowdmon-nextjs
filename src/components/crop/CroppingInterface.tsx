@@ -20,6 +20,7 @@ import {
     Typography,
 } from '@mui/material'
 import { ExpandMore } from '@mui/icons-material'
+import _ from 'lodash'
 
 export default function CroppingInterface() {
     const [crop, setCrop] = useState<Crop>()
@@ -27,6 +28,13 @@ export default function CroppingInterface() {
     const [isLoading, setIsLoading] = useState(true)
     const [refresh, setRefresh] = useState(true)
     const imgRef = useRef<HTMLImageElement>()
+    const [cropInfoDisplay, setCropInfoDisplay] = useState<Crop>({
+        unit: 'px',
+        width: NaN,
+        height: NaN,
+        x: NaN,
+        y: NaN,
+    })
 
     // when refresh is true, fetch new image
     useEffect(() => {
@@ -34,7 +42,8 @@ export default function CroppingInterface() {
             const fetchNewImageInfo = async () => {
                 setIsLoading(true)
                 // await fetch new image
-                const newImg = {} as ImageInfo
+                const newImg = (await (await fetch(`/api/randomImage`)).json())
+                    .data as ImageInfo
                 setImageInfo(newImg)
                 // setIsLoading(false)
             }
@@ -43,11 +52,61 @@ export default function CroppingInterface() {
         setRefresh(false)
     }, [refresh])
 
+    useEffect(() => {
+        if (crop) {
+            const cropX = crop.x ?? NaN
+            const cropY = crop.y ?? NaN
+            const cropWidth = crop.width ?? NaN
+            const cropHeight = crop.height ?? NaN
+            const width = imgRef.current?.width ?? NaN
+            const height = imgRef.current?.height ?? NaN
+
+            setCropInfoDisplay({
+                unit: 'px',
+                width: _.round((cropWidth * width) / 100, 2),
+                height: _.round((cropHeight * height) / 100, 2),
+                x: _.round((cropX * width) / 100, 2),
+                y: _.round((cropY * height) / 100, 2),
+            })
+        }
+    }, [crop])
+
     const handleOnSend = async () => {
         setRefresh(true)
+        if (imageInfo && crop) {
+            await submitCrop(crop, 1, imageInfo.imageId) //TODO: change to real annotator id
+        } else {
+            console.error('imageInfo or crop is null')
+        }
     }
     const handleOnSkip = async () => {
         setRefresh(true)
+        if (imageInfo) {
+            await submitCrop(null, 1, imageInfo?.imageId) //TODO: change to real annotator id
+        } else {
+            console.error('imageInfo is null')
+        }
+    }
+
+    const submitCrop = async (
+        crop: Crop | null,
+        annotatorId: number,
+        imageId: number
+    ) => {
+        await fetch('/api/cropv2', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                imageId: imageId,
+                annotatorId: 1, //TODO: change to real annotator id
+                x: crop?.x ?? null,
+                y: crop?.y ?? null,
+                width: crop?.width ?? null,
+                height: crop?.height ?? null,
+            }),
+        })
     }
 
     const handleOnCropChange = (crop: Crop, percentageCrop: PercentCrop) => {
@@ -61,7 +120,8 @@ export default function CroppingInterface() {
             centerCrop(
                 makeAspectCrop(
                     {
-                        unit: '%',
+                        unit: 'px',
+                        width: imgRef.current?.width,
                     },
                     1,
                     50,
@@ -100,8 +160,7 @@ export default function CroppingInterface() {
                         <ReactCrop crop={crop} onChange={handleOnCropChange}>
                             <Box
                                 component={'img'}
-                                // src={imageInfo?.url}
-                                src={'0.jpg'}
+                                src={imageInfo?.url}
                                 onLoad={handleOnImageLoad}
                                 sx={{ width: 'auto', height: 'auto' }}
                                 ref={imgRef}
@@ -143,24 +202,54 @@ export default function CroppingInterface() {
                     </AccordionSummary>
                     <AccordionDetails>
                         <Box hidden={isLoading}>
-                            <Typography variant={'body2'}>
+                            <Typography variant={'body1'}>
                                 Source: {imageInfo?.source}
                             </Typography>
-                            <Typography variant={'body2'}>
+                            <Typography variant={'body1'}>
                                 Video ID: {imageInfo?.videoName}
                             </Typography>
-                            <Typography variant={'body2'}>
+                            <Typography variant={'body1'}>
                                 Image ID: {imageInfo?.imageId}
                             </Typography>
-                            <Typography variant={'body2'}>
+                            <Typography variant={'body1'}>
                                 Image Name: {imageInfo?.imageName}
                             </Typography>
-                            <Typography variant={'body2'}>
+                            <Typography variant={'body1'}>
                                 Image URL: {imageInfo?.url}
                             </Typography>
                         </Box>
                         <Box hidden={!isLoading}>
                             <Skeleton variant={'text'} />
+                            <Skeleton variant={'text'} />
+                            <Skeleton variant={'text'} />
+                            <Skeleton variant={'text'} />
+                            <Skeleton variant={'text'} />
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
+                <Accordion>
+                    <AccordionSummary
+                        expandIcon={<ExpandMore />}
+                        id="crop-panel"
+                    >
+                        <Typography variant={'h6'}>Crop details</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Box hidden={isLoading}>
+                            <Typography variant={'body1'}>
+                                {`x: ${cropInfoDisplay.x}${cropInfoDisplay.unit}`}
+                            </Typography>
+                            <Typography variant={'body1'}>
+                                {`y: ${cropInfoDisplay.y}${cropInfoDisplay.unit}`}
+                            </Typography>
+                            <Typography variant={'body1'}>
+                                {`width: ${cropInfoDisplay.width}${cropInfoDisplay.unit}`}
+                            </Typography>
+                            <Typography variant={'body1'}>
+                                {`height: ${cropInfoDisplay.height}${cropInfoDisplay.unit}`}
+                            </Typography>
+                        </Box>
+                        <Box hidden={!isLoading}>
                             <Skeleton variant={'text'} />
                             <Skeleton variant={'text'} />
                             <Skeleton variant={'text'} />
