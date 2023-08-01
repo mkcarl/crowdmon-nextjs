@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import sql from '@/lib/postgres'
 import dayjs from 'dayjs'
 import { Annotation } from '@/types/db'
+import { firebaseAdminAuth } from '@/pages/lib/firebaseAdmin'
 
 interface Request extends NextApiRequest {
     body: {
@@ -10,16 +11,45 @@ interface Request extends NextApiRequest {
         y?: number
         width?: number
         height?: number
+        annotatorId?: string
     }
 }
 
 type Response = NextApiResponse<{ message: string }>
 
 export default async function handler(req: Request, res: Response) {
+    // verify id token
+    if (!req.headers.authorization) {
+        res.status(401)
+        res.json({ message: 'Please include id token' })
+        return
+    }
+
+    try {
+        const { user_id } = await firebaseAdminAuth.verifyIdToken(
+            req.headers.authorization.split(' ')[1]
+        )
+        if (user_id !== req.body.annotatorId) {
+            return res.status(401).json({ message: 'Invalid id token' })
+        }
+    } catch (e) {
+        return res.status(401).json({ message: 'Invalid id token' })
+    }
+
+    // business logic
     if (req.method === 'POST') {
+        if (!req.body.annotatorId) {
+            res.status(401)
+            res.json({ message: 'Please include uid' })
+            return
+        }
+
         let annotationId = await getAnnotation(req.body.imageId)
         if (!annotationId) {
-            annotationId = await newAnnotation(req.body.imageId, 1) // TODO : change to actual annotator id
+            annotationId = await newAnnotation(
+                req.body.imageId,
+                req.body.annotatorId
+            )
         }
         if (annotationId) {
             if (req.body.x && req.body.y && req.body.width && req.body.height) {
@@ -52,7 +82,7 @@ async function getAnnotation(imageId: number) {
     return annotations.pop()?.annotation_id ?? null
 }
 
-async function newAnnotation(imageId: number, annotatorId: number) {
+async function newAnnotation(imageId: number, annotatorId: string) {
     type QueryResults = { annotationId: number }[]
     const annotationId = await sql<QueryResults>`
             INSERT INTO annotation (image_id, annotator_id, seen, valid, timestamp)

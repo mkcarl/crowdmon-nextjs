@@ -21,6 +21,9 @@ import {
 } from '@mui/material'
 import { ExpandMore } from '@mui/icons-material'
 import _ from 'lodash'
+import { auth } from 'firebase-admin'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { firebaseAuth } from '@/lib/firebase'
 
 export default function CroppingInterface() {
     const [crop, setCrop] = useState<Crop>()
@@ -35,6 +38,7 @@ export default function CroppingInterface() {
         x: NaN,
         y: NaN,
     })
+    const [user, userLoading, userError] = useAuthState(firebaseAuth)
 
     // when refresh is true, fetch new image
     useEffect(() => {
@@ -74,7 +78,7 @@ export default function CroppingInterface() {
     const handleOnSend = async () => {
         setRefresh(true)
         if (imageInfo && crop) {
-            await submitCrop(crop, 1, imageInfo.imageId) //TODO: change to real annotator id
+            await submitCrop(crop, imageInfo.imageId)
         } else {
             console.error('imageInfo or crop is null')
         }
@@ -82,25 +86,23 @@ export default function CroppingInterface() {
     const handleOnSkip = async () => {
         setRefresh(true)
         if (imageInfo) {
-            await submitCrop(null, 1, imageInfo?.imageId) //TODO: change to real annotator id
+            await submitCrop(null, imageInfo?.imageId)
         } else {
             console.error('imageInfo is null')
         }
     }
 
-    const submitCrop = async (
-        crop: Crop | null,
-        annotatorId: number,
-        imageId: number
-    ) => {
+    const submitCrop = async (crop: Crop | null, imageId: number) => {
+        console.log(await user?.getIdToken())
         await fetch('/api/cropv2', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + (await user?.getIdToken()),
             },
             body: JSON.stringify({
                 imageId: imageId,
-                annotatorId: 1, //TODO: change to real annotator id
+                annotatorId: user?.uid ?? null,
                 x: crop?.x ?? null,
                 y: crop?.y ?? null,
                 width: crop?.width ?? null,

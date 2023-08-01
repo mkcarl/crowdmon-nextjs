@@ -9,14 +9,14 @@ export type Image = {
 export type Annotation = {
     annotation_id: number
     image_id: number
-    annotator_id: number
+    annotator_id: string
     timestamp: number
     seen: boolean
     valid: boolean
 }
 
 export type AnnotatorUser = {
-    user_id: number
+    user_id: string
     username: string
     image_url: string | null
 }
