@@ -21,7 +21,6 @@ import {
 } from '@mui/material'
 import { ExpandMore } from '@mui/icons-material'
 import _ from 'lodash'
-import { auth } from 'firebase-admin'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { firebaseAuth } from '@/lib/firebase'
 
@@ -93,7 +92,6 @@ export default function CroppingInterface() {
     }
 
     const submitCrop = async (crop: Crop | null, imageId: number) => {
-        console.log(await user?.getIdToken())
         await fetch('/api/cropv2', {
             method: 'POST',
             headers: {
