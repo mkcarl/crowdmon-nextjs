@@ -1,7 +1,6 @@
 import {
     AppBar,
     Chip,
-    CircularProgress,
     IconButton,
     Link,
     Toolbar,
@@ -11,11 +10,9 @@ import {
 import Home from '@mui/icons-material/Home'
 import Leaderboard from '@mui/icons-material/Leaderboard'
 import Logout from '@mui/icons-material/Logout'
-import { getAuth, signOut } from '@firebase/auth'
-import { firebaseApp, firebaseAuth } from '../lib/firebase'
+import { firebaseAuth } from '@/lib/firebase'
 import { useRouter } from 'next/router'
 import { useAuthState, useSignOut } from 'react-firebase-hooks/auth'
-import { useEffect } from 'react'
 import { useCookies } from 'react-cookie'
 
 export default function Navbar() {
@@ -48,7 +45,7 @@ export default function Navbar() {
                 </Typography>
                 <Chip
                     variant={'filled'}
-                    label={usernameCookies.username ?? 'Loading...'}
+                    label={usernameCookies.username}
                     color={'secondary'}
                 />
                 <Tooltip title={'Home'}>

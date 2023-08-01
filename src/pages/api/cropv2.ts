@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import sql from '@/lib/postgres'
 import dayjs from 'dayjs'
 import { Annotation } from '@/types/db'
-import { firebaseAdminAuth } from '@/pages/lib/firebaseAdmin'
+import { firebaseAdminAuth } from '@/lib/firebaseAdmin'
 
 interface Request extends NextApiRequest {
     body: {
