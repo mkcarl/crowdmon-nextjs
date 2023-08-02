@@ -4,7 +4,11 @@ import { AvailableVideosList } from '@/components/AvailableVideoList'
 import Redis from 'ioredis'
 import { configDotenv } from 'dotenv'
 import { MongoClient } from 'mongodb'
-import useAuth from '@/hooks/useAuth'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { firebaseAuth } from '@/lib/firebase'
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
+import Loading from '@/components/Loading'
 
 configDotenv()
 
@@ -15,7 +19,18 @@ interface HomepageProp {
 }
 
 export default function Index(props: HomepageProp) {
-    const user = useAuth()
+    const [user, loading, error] = useAuthState(firebaseAuth)
+    const router = useRouter()
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/')
+        }
+    }, [user])
+
+    if (loading || !user) {
+        return <Loading />
+    }
 
     return (
         <>

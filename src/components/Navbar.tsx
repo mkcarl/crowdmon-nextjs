@@ -10,15 +10,20 @@ import {
 import Home from '@mui/icons-material/Home'
 import Leaderboard from '@mui/icons-material/Leaderboard'
 import Logout from '@mui/icons-material/Logout'
-import { getAuth, signOut } from '@firebase/auth'
-import { firebaseApp } from '@/firebase'
+import { firebaseAuth } from '@/lib/firebase'
 import { useRouter } from 'next/router'
+import { useAuthState, useSignOut } from 'react-firebase-hooks/auth'
+import { useCookies } from 'react-cookie'
 
 export default function Navbar() {
     const router = useRouter()
-    const firebaseAuth = getAuth(firebaseApp)
+    const [signOut, loading, error] = useSignOut(firebaseAuth)
+    const [user, userLoading, userError] = useAuthState(firebaseAuth)
+    const [usernameCookies, _, removeUsernameCookies] = useCookies(['username'])
+
     const handleLogout = async () => {
-        await signOut(firebaseAuth)
+        await signOut()
+        removeUsernameCookies('username')
         await router.push('/')
     }
 
@@ -40,7 +45,7 @@ export default function Navbar() {
                 </Typography>
                 <Chip
                     variant={'filled'}
-                    label={firebaseAuth.currentUser?.displayName}
+                    label={usernameCookies.username}
                     color={'secondary'}
                 />
                 <Tooltip title={'Home'}>

@@ -5,7 +5,10 @@ import { ContributionDetailsList } from '@/components/ContributionDetailsList'
 import { MongoClient } from 'mongodb'
 import { configDotenv } from 'dotenv'
 import { GetServerSidePropsContext } from 'next'
-import useAuth from '@/hooks/useAuth'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { firebaseAuth } from '@/lib/firebase'
+import { useEffect } from 'react'
+import Loading from '@/components/Loading'
 
 configDotenv()
 
@@ -106,8 +109,18 @@ const colors = [
 ] as const
 
 export default function PersonalContribution(props: PersonalContributionProps) {
-    useAuth()
+    const [user, loading, error] = useAuthState(firebaseAuth)
     const router = useRouter()
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/')
+        }
+    }, [user])
+
+    if (loading || !user) {
+        return <Loading />
+    }
     const query = router.query as MyQuery
 
     return (

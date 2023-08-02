@@ -10,7 +10,9 @@ import {
 } from '@mui/material'
 import {
     centerCrop,
+    Crop,
     makeAspectCrop,
+    PercentCrop,
     PixelCrop,
     ReactCrop,
 } from 'react-image-crop'
@@ -29,7 +31,7 @@ interface Props {
 }
 export function ImageCropper(props: Props) {
     const [refresh, setRefresh] = useState(false)
-    const [crop, setCrop] = useState<PixelCrop>()
+    const [crop, setCrop] = useState<Crop>()
     const [completedCrop, setCompletedCrop] = useState<PixelCrop>()
     const [imageLoaded, setImageLoaded] = useState(false)
     const [dimensions, setDimensions] = useState({ width: 640, height: 360 })
@@ -91,15 +93,21 @@ export function ImageCropper(props: Props) {
 
     const getCroppedImg = async (image: HTMLImageElement) => {
         try {
+            console.log(image)
+            console.log(crop)
             const canvas = document.createElement('canvas')
             const ctx = canvas.getContext('2d')
+            console.log('canvas', canvas)
 
             const centerX = image.naturalWidth / 2
             const centerY = image.naturalHeight / 2
 
-            canvas.width = crop!.width
-            canvas.height = crop!.height
-            ctx!.translate(-crop!.x, -crop!.y)
+            canvas.width = (crop!.width * image.naturalWidth) / 100
+            canvas.height = (crop!.height * image.naturalHeight) / 100
+            ctx!.translate(
+                (-crop!.x * image.naturalWidth) / 100,
+                (-crop!.y * image.naturalHeight) / 100
+            )
             ctx!.translate(centerX, centerY)
             ctx!.translate(-centerX, -centerY)
             ctx!.drawImage(
@@ -154,7 +162,7 @@ export function ImageCropper(props: Props) {
     }
 
     const onImageLoad = (e: any) => {
-        const { width, height } = e.currentTarget
+        const { width, height } = dimensions
         setImageLoaded(true)
         setCrop(centerAspectCrop(width, height))
         setDimensions({
@@ -220,8 +228,8 @@ export function ImageCropper(props: Props) {
                             <Box component={'div'} hidden={props.completed}>
                                 <ReactCrop
                                     crop={crop}
-                                    onChange={(c) => {
-                                        setCrop(c)
+                                    onChange={(c, percentageCrop) => {
+                                        setCrop(percentageCrop)
                                     }}
                                     onComplete={(c) => setCompletedCrop(c)}
                                 >

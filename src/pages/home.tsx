@@ -2,7 +2,11 @@ import Navbar from '@/components/Navbar'
 import { Box, Typography } from '@mui/material'
 import { AnnotationOption } from '@/types/home'
 import AnnotationCard from '@/components/home/AnnotationCard'
-import useAuth from '@/hooks/useAuth'
+import { useRouter } from 'next/router'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { firebaseAuth } from '@/lib/firebase'
+import { useEffect } from 'react'
+import Loading from '@/components/Loading'
 
 const annotationOptions: AnnotationOption[] = [
     {
@@ -20,7 +24,18 @@ const annotationOptions: AnnotationOption[] = [
 ]
 
 export default function Home() {
-    useAuth()
+    const [user, loading, error] = useAuthState(firebaseAuth)
+    const router = useRouter()
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/')
+        }
+    }, [user])
+
+    if (loading || !user) {
+        return <Loading />
+    }
 
     return (
         <Box

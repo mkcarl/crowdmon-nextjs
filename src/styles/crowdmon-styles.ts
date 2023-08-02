@@ -1,16 +1,19 @@
-import {createTheme} from "@mui/material";
+import { createTheme } from '@mui/material'
 
 export const crowdmonTheme = createTheme({
     palette: {
-        mode: "dark",
+        mode: 'dark',
         primary: {
-            main: "#df988d",
+            main: '#df988d',
         },
         secondary: {
-            main: "#d9c5c5",
+            main: '#d9c5c5',
         },
         background: {
-            default: "#303030",
+            default: '#0e0706',
+        },
+        text: {
+            primary: '#fcf8f8',
         },
     },
-});
+})

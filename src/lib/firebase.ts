@@ -1,5 +1,7 @@
 import { initializeApp } from '@firebase/app'
 import { configDotenv } from 'dotenv'
+import { getAuth } from '@firebase/auth'
+import { getFirestore } from '@firebase/firestore'
 
 configDotenv()
 export const firebaseApp = initializeApp({
@@ -11,3 +13,6 @@ export const firebaseApp = initializeApp({
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 })
+
+export const firebaseAuth = getAuth(firebaseApp)
+export const firebaseFirestore = getFirestore(firebaseApp)

@@ -14,7 +14,11 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { GetStaticProps } from 'next'
 import Link from 'next/link'
 import { MongoClient } from 'mongodb'
-import useAuth from '@/hooks/useAuth'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { firebaseAuth } from '@/lib/firebase'
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
+import Loading from '@/components/Loading'
 
 dayjs.extend(relativeTime)
 
@@ -88,7 +92,18 @@ interface ContributionPageProps {
 }
 
 export default function ContributionsPage(props: ContributionPageProps) {
-    useAuth()
+    const [user, loading, error] = useAuthState(firebaseAuth)
+    const router = useRouter()
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/')
+        }
+    }, [user])
+
+    if (loading || !user) {
+        return <Loading />
+    }
 
     return (
         <Box component={'div'}>

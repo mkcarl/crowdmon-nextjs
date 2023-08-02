@@ -10,6 +10,7 @@ import {
     Typography,
 } from '@mui/material'
 import VideoLibrary from '@mui/icons-material/VideoLibrary'
+import { useRouter } from 'next/router'
 
 interface AvailableVideosListProp {
     cropStatus: Record<string, string>
@@ -45,8 +46,12 @@ interface VideoItemProp {
 }
 
 function VideoItem(props: VideoItemProp) {
+    const router = useRouter()
+    const handleOnClick = () => {
+        router.push(`/crop/${props.name}`)
+    }
     return (
-        <ListItemButton href={`/crop/${props.name}`}>
+        <ListItemButton onClick={handleOnClick}>
             <ListItemIcon>
                 <VideoLibrary color={'primary'} />
             </ListItemIcon>

@@ -1,27 +1,45 @@
 import { Box, Button, Grid, Typography } from '@mui/material'
-import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth'
-import { useAuthState } from 'react-firebase-hooks/auth'
+import { useAuthState, useSignInWithGoogle } from 'react-firebase-hooks/auth'
 import { useRouter } from 'next/router'
-import { firebaseApp } from '@/firebase'
+import { firebaseAuth, firebaseFirestore } from '@/lib/firebase'
+import Loading from '@/components/Loading'
+import { doc, getDoc, setDoc } from '@firebase/firestore'
+import { useCookies } from 'react-cookie'
 
 export default function LandingPage() {
-    const provider = new GoogleAuthProvider()
-    const auth = getAuth(firebaseApp)
-    const [user, loading] = useAuthState(auth)
+    const [user, loading, userError] = useAuthState(firebaseAuth)
+    const [signInWithGoogle, _, __, loginError] =
+        useSignInWithGoogle(firebaseAuth)
     const router = useRouter()
+    const [userCookies, setUserCookies] = useCookies(['username'])
 
     if (loading) {
-        return <Box>Loading...</Box>
+        return <Loading />
     }
 
     if (user) {
         router.push('/home')
-        return <Box>Loading...</Box>
+        return <Loading />
     }
 
-    const signInWithGoogle = async () => {
-        const results = await signInWithPopup(auth, provider)
-        console.log(results)
+    const handleOnLogin = async () => {
+        const results = await signInWithGoogle()
+
+        if (!results) return
+        const docRef = doc(firebaseFirestore, 'user', results.user.uid)
+        const info = await getDoc(docRef)
+        const data = {
+            uid: results.user.uid,
+            name: results.user.displayName,
+            bio: '',
+        }
+
+        if (!info.exists()) {
+            await setDoc(docRef, data)
+            setUserCookies('username', results.user.displayName)
+        }
+
+        setUserCookies('username', (info.data() as typeof data).name)
     }
 
     return (
@@ -46,7 +64,7 @@ export default function LandingPage() {
                     <Button
                         variant={'contained'}
                         color={'secondary'}
-                        onClick={signInWithGoogle}
+                        onClick={handleOnLogin}
                     >
                         Get started
                     </Button>
