@@ -120,12 +120,12 @@ export default function CroppingInterface() {
             centerCrop(
                 makeAspectCrop(
                     {
-                        unit: 'px',
-                        width: imgRef.current?.width,
+                        unit: '%',
+                        height: 30,
                     },
                     1,
-                    50,
-                    50
+                    imgRef.current?.width,
+                    imgRef.current?.height
                 ),
                 imgRef.current?.width,
                 imgRef.current?.height
