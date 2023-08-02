@@ -57,12 +57,12 @@ export default function Navbar() {
                 </Typography>
                 <Chip variant={'filled'} label={username} color={'secondary'} />
                 <Tooltip title={'Home'}>
-                    <IconButton href={'/home'}>
+                    <IconButton onClick={() => router.push('/home')}>
                         <Home sx={{ color: 'primary.contrastText' }} />
                     </IconButton>
                 </Tooltip>
                 <Tooltip title={'Contribution'}>
-                    <IconButton href={'/contributions'}>
+                    <IconButton onClick={() => router.push('/contributions')}>
                         <Leaderboard sx={{ color: 'primary.contrastText' }} />
                     </IconButton>
                 </Tooltip>
