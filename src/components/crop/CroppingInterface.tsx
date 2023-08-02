@@ -1,5 +1,5 @@
 import 'react-image-crop/dist/ReactCrop.css'
-import { useEffect, useRef, useState } from 'react'
+import { FC, PropsWithChildren, useEffect, useRef, useState } from 'react'
 import {
     centerCrop,
     Crop,
@@ -23,6 +23,7 @@ import { ExpandMore } from '@mui/icons-material'
 import _ from 'lodash'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { firebaseAuth } from '@/lib/firebase'
+import { ScriptProps } from 'next/script'
 
 export default function CroppingInterface() {
     const [crop, setCrop] = useState<Crop>()
@@ -134,6 +135,22 @@ export default function CroppingInterface() {
         setIsLoading(false)
     }
 
+    interface DisplayInfoProps {
+        title: string
+        info: string
+        color: string
+    }
+    const DisplayInfo: FC<Partial<DisplayInfoProps>> = (props) => {
+        return (
+            <>
+                <Box component={'span'} fontWeight={'bold'} color={props.color}>
+                    {props.title}:{' '}
+                </Box>
+                {props.info}
+            </>
+        )
+    }
+
     return (
         <Paper
             sx={{
@@ -202,20 +219,55 @@ export default function CroppingInterface() {
                     </AccordionSummary>
                     <AccordionDetails>
                         <Box hidden={isLoading}>
-                            <Typography variant={'body1'}>
-                                Source: {imageInfo?.source}
+                            <Typography
+                                variant={'body1'}
+                                sx={{ wordWrap: 'break-word' }}
+                            >
+                                <DisplayInfo
+                                    title={'Source'}
+                                    info={imageInfo?.source}
+                                    color={'primary.light'}
+                                />
                             </Typography>
-                            <Typography variant={'body1'}>
-                                Video ID: {imageInfo?.videoName}
+                            <Typography
+                                variant={'body1'}
+                                sx={{ wordWrap: 'break-word' }}
+                            >
+                                <DisplayInfo
+                                    title={'Video ID'}
+                                    info={imageInfo?.videoName}
+                                    color={'primary.light'}
+                                />
                             </Typography>
-                            <Typography variant={'body1'}>
-                                Image ID: {imageInfo?.imageId}
+                            <Typography
+                                variant={'body1'}
+                                sx={{ wordWrap: 'break-word' }}
+                            >
+                                <DisplayInfo
+                                    title={'Image ID'}
+                                    info={imageInfo?.imageId.toString()}
+                                    color={'primary.light'}
+                                />
                             </Typography>
-                            <Typography variant={'body1'}>
-                                Image Name: {imageInfo?.imageName}
+                            <Typography
+                                variant={'body1'}
+                                sx={{ wordWrap: 'break-word' }}
+                            >
+                                <DisplayInfo
+                                    title={'Image name'}
+                                    info={imageInfo?.imageName}
+                                    color={'primary.light'}
+                                />
                             </Typography>
-                            <Typography variant={'body1'}>
-                                Image URL: {imageInfo?.url}
+                            <Typography
+                                variant={'body1'}
+                                sx={{ wordWrap: 'break-word' }}
+                            >
+                                <DisplayInfo
+                                    title={'URL'}
+                                    info={imageInfo?.url}
+                                    color={'primary.light'}
+                                />
                             </Typography>
                         </Box>
                         <Box hidden={!isLoading}>
@@ -237,16 +289,32 @@ export default function CroppingInterface() {
                     <AccordionDetails>
                         <Box hidden={isLoading}>
                             <Typography variant={'body1'}>
-                                {`x: ${cropInfoDisplay.x}${cropInfoDisplay.unit}`}
+                                <DisplayInfo
+                                    title={'x'}
+                                    info={`${cropInfoDisplay.x}${cropInfoDisplay.unit}`}
+                                    color={'secondary.light'}
+                                />
                             </Typography>
                             <Typography variant={'body1'}>
-                                {`y: ${cropInfoDisplay.y}${cropInfoDisplay.unit}`}
+                                <DisplayInfo
+                                    title={'y'}
+                                    info={`${cropInfoDisplay.y}${cropInfoDisplay.unit}`}
+                                    color={'secondary.light'}
+                                />
                             </Typography>
                             <Typography variant={'body1'}>
-                                {`width: ${cropInfoDisplay.width}${cropInfoDisplay.unit}`}
+                                <DisplayInfo
+                                    title={'width'}
+                                    info={`${cropInfoDisplay.width}${cropInfoDisplay.unit}`}
+                                    color={'secondary.light'}
+                                />
                             </Typography>
                             <Typography variant={'body1'}>
-                                {`height: ${cropInfoDisplay.height}${cropInfoDisplay.unit}`}
+                                <DisplayInfo
+                                    title={'height'}
+                                    info={`${cropInfoDisplay.height}${cropInfoDisplay.unit}`}
+                                    color={'secondary.light'}
+                                />
                             </Typography>
                         </Box>
                         <Box hidden={!isLoading}>
