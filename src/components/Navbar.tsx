@@ -31,7 +31,7 @@ export default function Navbar() {
                 handleLogout()
             }
         }
-    }, [user])
+    }, [user, usernameCookies])
 
     const handleLogout = async () => {
         await signOut()

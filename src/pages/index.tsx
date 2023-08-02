@@ -37,9 +37,9 @@ export default function LandingPage() {
         if (!info.exists()) {
             await setDoc(docRef, data)
             setUserCookies('username', results.user.displayName)
+        } else {
+            setUserCookies('username', info.get('name'))
         }
-
-        setUserCookies('username', (info.data() as typeof data).name)
     }
 
     return (
