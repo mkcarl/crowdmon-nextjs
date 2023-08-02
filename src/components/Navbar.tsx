@@ -14,12 +14,24 @@ import { firebaseAuth } from '@/lib/firebase'
 import { useRouter } from 'next/router'
 import { useAuthState, useSignOut } from 'react-firebase-hooks/auth'
 import { useCookies } from 'react-cookie'
+import { useEffect, useState } from 'react'
 
 export default function Navbar() {
     const router = useRouter()
     const [signOut, loading, error] = useSignOut(firebaseAuth)
     const [user, userLoading, userError] = useAuthState(firebaseAuth)
     const [usernameCookies, _, removeUsernameCookies] = useCookies(['username'])
+    const [username, setUsername] = useState('')
+
+    useEffect(() => {
+        if (user) {
+            setUsername(usernameCookies.username)
+        } else {
+            if (!loading) {
+                handleLogout()
+            }
+        }
+    }, [user])
 
     const handleLogout = async () => {
         await signOut()
@@ -43,11 +55,7 @@ export default function Navbar() {
                         Crowdmon
                     </Link>
                 </Typography>
-                <Chip
-                    variant={'filled'}
-                    label={usernameCookies.username}
-                    color={'secondary'}
-                />
+                <Chip variant={'filled'} label={username} color={'secondary'} />
                 <Tooltip title={'Home'}>
                     <IconButton href={'/home'}>
                         <Home sx={{ color: 'primary.contrastText' }} />
