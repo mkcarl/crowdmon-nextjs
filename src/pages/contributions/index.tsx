@@ -1,164 +1,53 @@
-import {
-    Avatar,
-    Box,
-    Grid,
-    List,
-    ListItemAvatar,
-    ListItemButton,
-    ListItemText,
-    Typography,
-} from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import Navbar from '@/components/Navbar'
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import { GetStaticProps } from 'next'
-import Link from 'next/link'
-import { MongoClient } from 'mongodb'
-import { useAuthState } from 'react-firebase-hooks/auth'
-import { firebaseAuth } from '@/lib/firebase'
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-import Loading from '@/components/Loading'
+import Grid from '@mui/system/Unstable_Grid'
+import { Container } from '@mui/material'
+import { useCookies } from 'react-cookie'
+import SingleStatPanel from '@/components/dashboard/SingleStatPanel'
 
-dayjs.extend(relativeTime)
-
-async function getAllCrops() {
-    const client = new MongoClient(process.env.MONGODB_URI!)
-    const db = client.db('crowdmon')
-    const collection = db.collection('crops')
-    const crops = await collection.find().toArray()
-    const cropsIntoCorrectFormat = crops.map((crop) => {
-        return {
-            video_id: crop.videoId,
-            image_id: crop.imageId,
-            annotation_class: crop.annotationClass,
-            annotation_startX: crop.annotationStartX,
-            annotation_startY: crop.annotationStartY,
-            annotation_width: crop.annotationWidth,
-            annotation_height: crop.annotationHeight,
-            contributor_id: crop.contributorId,
-            timestamp: crop.timestamp,
-        }
-    })
-    return cropsIntoCorrectFormat
-}
-
-export const getStaticProps: GetStaticProps<ContributionPageProps> = async (
-    context
-) => {
-    const crops = await getAllCrops()
-    const accumulator: Record<
-        string,
-        { contribution: number; lastContribution: number }
-    > = {}
-
-    for (const crop of crops) {
-        if (crop.contributor_id in accumulator) {
-            accumulator[crop.contributor_id].contribution += 1
-            accumulator[crop.contributor_id].lastContribution = Math.max(
-                accumulator[crop.contributor_id].lastContribution,
-                crop.timestamp
-            )
-        } else {
-            accumulator[crop.contributor_id] = {
-                contribution: 1,
-                lastContribution: crop.timestamp,
-            }
-        }
-    }
-
-    const contribs = Object.entries(accumulator).map(([key, value]) => {
-        return {
-            contributor_id: key,
-            contribution: value.contribution,
-            lastContribution: value.lastContribution,
-        }
-    })
-
-    return {
-        props: {
-            contributions: contribs,
-        },
-        revalidate: 10,
-    }
-}
-
-interface ContributionPageProps {
-    contributions: Array<{
-        contributor_id: string
-        contribution: number
-        lastContribution: number
-    }>
-}
-
-export default function ContributionsPage(props: ContributionPageProps) {
-    const [user, loading, error] = useAuthState(firebaseAuth)
-    const router = useRouter()
-
-    useEffect(() => {
-        if (!user) {
-            router.push('/')
-        }
-    }, [user])
-
-    if (loading || !user) {
-        return <Loading />
-    }
+export default function ContributionsPage() {
+    const [cookie] = useCookies(['username'])
 
     return (
-        <Box component={'div'}>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <Navbar />
-            <Box component={'div'} sx={{ padding: '1rem' }}>
-                <Typography variant={'h1'}>Contribution Leaderboard</Typography>
-                <Grid container>
-                    <Grid item xs={0} md={3}></Grid>
-                    <Grid item xs={12} md={6}>
-                        <List>
-                            {Object.entries(props.contributions).map(
-                                ([key, value]) => {
-                                    return (
-                                        <Contributions
-                                            name={value.contributor_id}
-                                            contributions={value.contribution}
-                                            lastContribution={
-                                                value.lastContribution
-                                            }
-                                            key={key}
-                                        />
-                                    )
-                                }
-                            )}
-                        </List>
+            <Box sx={{ width: '100vw', flex: 1, p: 4 }}>
+                <Container>
+                    <Typography variant={'h1'}>
+                        {'username'}&apos;s Contributions
+                    </Typography>
+                </Container>
+                <Grid container spacing={3}>
+                    <Grid xs={3}>
+                        <SingleStatPanel
+                            value={123}
+                            subtitle={'days logged in'}
+                            icon={null}
+                        />
                     </Grid>
-                    <Grid item xs={0} md={3}></Grid>
+                    <Grid xs={3}>
+                        <SingleStatPanel
+                            value={1111}
+                            subtitle={'total contributions'}
+                            icon={null}
+                        />
+                    </Grid>
+                    <Grid xs={3}>
+                        <SingleStatPanel
+                            value={'#1'}
+                            subtitle={'top contributor'}
+                            icon={null}
+                        />
+                    </Grid>
+                    <Grid xs={3}>
+                        <SingleStatPanel
+                            value={'30%'}
+                            subtitle={'overall contribution'}
+                            icon={null}
+                        />
+                    </Grid>
                 </Grid>
             </Box>
         </Box>
-    )
-}
-
-interface ContributionProps {
-    name: string
-    contributions: number
-    lastContribution: number
-}
-
-function Contributions(props: ContributionProps) {
-    return (
-        <ListItemButton component={Link} href={`/contributions/${props.name}`}>
-            <ListItemAvatar>
-                <Avatar variant={'circular'}>A</Avatar>
-            </ListItemAvatar>
-            <ListItemText
-                primary={props.name}
-                secondary={`Latest contribution : ${dayjs(
-                    props.lastContribution
-                ).fromNow()}`}
-            />
-            <ListItemText
-                primary={props.contributions}
-                sx={{ textAlign: 'right' }}
-            />
-        </ListItemButton>
     )
 }
