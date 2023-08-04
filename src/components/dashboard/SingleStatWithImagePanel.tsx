@@ -1,10 +1,11 @@
 import { Avatar, Box, Paper, Typography } from '@mui/material'
 import { NextPage } from 'next'
 import { CheckBox, FileOpen, FileOpenOutlined } from '@mui/icons-material'
+import Image from 'next/image'
 
-type Props = { value: number | string; subtitle: string; icon: any }
+type Props = { value: number | string; subtitle: string; url: string }
 
-const SingleStatPanel: NextPage<Props> = (props) => {
+const SingleStatWithImagePanel: NextPage<Props> = (props) => {
     return (
         <Box sx={{ width: '100%' }}>
             <Paper elevation={6} sx={{ display: 'flex', alignItems: 'center' }}>
@@ -14,20 +15,26 @@ const SingleStatPanel: NextPage<Props> = (props) => {
                         flexDirection: 'row',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        height: '100%',
-                        width: '100%',
+                        flex: 1,
                         p: 4,
                     }}
                 >
                     <Box
-                        component={props.icon}
-                        sx={{ fontSize: 72, color: 'primary.main' }}
-                    />
+                        sx={{
+                            flex: 2,
+                        }}
+                    >
+                        <Box
+                            component={'img'}
+                            src={props.url}
+                            sx={{ width: 'auto', height: '150px' }}
+                        />
+                    </Box>
                     <Box
                         sx={{
                             display: 'flex',
                             flexDirection: 'column',
-                            flex: 1,
+                            flex: 3,
                             alignItems: 'flex-end',
                         }}
                     >
@@ -47,4 +54,4 @@ const SingleStatPanel: NextPage<Props> = (props) => {
         </Box>
     )
 }
-export default SingleStatPanel
+export default SingleStatWithImagePanel
