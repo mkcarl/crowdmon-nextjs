@@ -1,6 +1,7 @@
 import { FC, useEffect } from 'react'
 import { Box, Container, Divider, Paper, Typography } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
+import { chalkTheme } from '@/styles/echart-theme'
 
 type Props = {
     options: any
@@ -28,6 +29,7 @@ const ChartPanelWithTitle: FC<Props> = (props) => {
                     <ReactECharts
                         option={props.options}
                         style={{ height: '24rem' }}
+                        theme={chalkTheme}
                     />
                 </Box>
             </Paper>
