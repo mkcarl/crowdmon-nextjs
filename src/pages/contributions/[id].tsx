@@ -108,6 +108,9 @@ const ContributionsPage: NextPage<Props> = (props) => {
                             title={'Annotations grouped by video name'}
                         />
                     </Grid>
+                    {/*TODO : add annotation speed to crop table, so can show average annotation speed */}
+                    {/**/}
+
                     {/*    <Grid xs={6}>*/}
                     {/*        <ChartPanelWithTitle*/}
                     {/*            options={{*/}
