@@ -62,7 +62,11 @@ export default function Navbar() {
                     </IconButton>
                 </Tooltip>
                 <Tooltip title={'Contribution'}>
-                    <IconButton onClick={() => router.push('/contributions')}>
+                    <IconButton
+                        onClick={() =>
+                            router.push(`/contributions/${user?.uid}`)
+                        }
+                    >
                         <Leaderboard sx={{ color: 'primary.contrastText' }} />
                     </IconButton>
                 </Tooltip>
