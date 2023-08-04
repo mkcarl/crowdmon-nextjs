@@ -290,6 +290,9 @@ const multiBarChartTemplate = (data: any) => {
         tooltip: {
             trigger: 'axis',
         },
+        legend: {
+            show: true,
+        },
         yAxis: {
             type: 'value',
         },
