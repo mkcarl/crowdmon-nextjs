@@ -217,9 +217,6 @@ const contributionByTypeTemplate = (data: any) => {
         legend: {
             top: '5%',
             left: 'center',
-            textStyle: {
-                color: 'primary',
-            },
         },
         series: [
             {
@@ -278,9 +275,6 @@ const contributionByDayTemplate = (data: any) => {
         },
         legend: {
             show: true,
-            textStyle: {
-                color: 'primary',
-            },
         },
     }
 }
