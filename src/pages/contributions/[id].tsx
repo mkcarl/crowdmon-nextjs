@@ -11,17 +11,28 @@ import { useEffect, useState } from 'react'
 import sql from '@/lib/postgres'
 import { firebaseAuth } from '@/lib/firebase'
 import { useAuthState } from 'react-firebase-hooks/auth'
+import {
+    getContributionByType,
+    getContributionsByDay,
+} from '@/lib/dashboardQueries'
+import dayjs from 'dayjs'
 
 interface Props {
     contributionByTypeData: EChartsOption
+    contributionByDayData: EChartsOption
 }
 const ContributionsPage: NextPage<Props> = (props) => {
     const [cookie] = useCookies(['username'])
-    const [donutData, setDonutData] = useState<EChartsOption>({})
+    const [donutData, setDonutData] = useState<any>({})
+    const [timelineData, setTimelineData] = useState<any>({})
 
     useEffect(() => {
-        setDonutData(props.contributionByTypeData)
-    }, [props])
+        setDonutData(contributionByTypeTemplate(props.contributionByTypeData))
+    }, [props.contributionByTypeData])
+
+    useEffect(() => {
+        setTimelineData(contributionByDayTemplate(props.contributionByDayData))
+    }, [props.contributionByDayData])
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -75,34 +86,12 @@ const ContributionsPage: NextPage<Props> = (props) => {
                             title={'Contribution by type'}
                         />
                     </Grid>
-                    {/*    <Grid xs={8}>*/}
-                    {/*        <ChartPanelWithTitle*/}
-                    {/*            options={{*/}
-                    {/*                xAxis: {*/}
-                    {/*                    type: 'category',*/}
-                    {/*                    data: [*/}
-                    {/*                        'Mon',*/}
-                    {/*                        'Tue',*/}
-                    {/*                        'Wed',*/}
-                    {/*                        'Thu',*/}
-                    {/*                        'Fri',*/}
-                    {/*                        'Sat',*/}
-                    {/*                        'Sun',*/}
-                    {/*                    ],*/}
-                    {/*                },*/}
-                    {/*                yAxis: {*/}
-                    {/*                    type: 'value',*/}
-                    {/*                },*/}
-                    {/*                series: [*/}
-                    {/*                    {*/}
-                    {/*                        data: [120, 200, 150, 80, 70, 110, 130],*/}
-                    {/*                        type: 'bar',*/}
-                    {/*                    },*/}
-                    {/*                ],*/}
-                    {/*            }}*/}
-                    {/*            title={'Contribution timeline'}*/}
-                    {/*        />*/}
-                    {/*    </Grid>*/}
+                    <Grid xs={12} md={6}>
+                        <ChartPanelWithTitle
+                            options={timelineData}
+                            title={'Contribution timeline'}
+                        />
+                    </Grid>
                     {/*    <Grid xs={12}>*/}
                     {/*        <ChartPanelWithTitle*/}
                     {/*            options={{*/}
@@ -227,20 +216,8 @@ const ContributionsPage: NextPage<Props> = (props) => {
     )
 }
 
-export const getServerSideProps = async (
-    context: GetServerSidePropsContext
-) => {
-    const data = await sql`
-        select 'bounding box' as name, count(*) as value
-        from annotation
-                 left join crop c on annotation.annotation_id = c.annotation_id
-        where annotator_id = ${context.query.id as string}
-;
-
-`
-    console.log(data)
-
-    const contributionByData = {
+const contributionByTypeTemplate = (data: any) => {
+    return {
         // doughnut chart
         tooltip: {
             trigger: 'item',
@@ -276,10 +253,62 @@ export const getServerSideProps = async (
             },
         ],
     }
+}
+
+const contributionByDayTemplate = (data: any) => {
+    return {
+        xAxis: {
+            type: 'category',
+            data: data.slice(0, 7).map((d: any) => d.day_of_week),
+        },
+        yAxis: {
+            type: 'value',
+            name: 'Number of annotations',
+            nameLocation: 'center',
+            nameGap: 50,
+        },
+        series: [
+            {
+                data: data.slice(0, 7).map((d: any) => d.annotation_count),
+                type: 'line',
+                name: 'Last week',
+                smooth: true,
+            },
+            {
+                data: data.slice(7, 14).map((d: any) => d.annotation_count),
+                type: 'line',
+                name: 'This week',
+                smooth: true,
+            },
+        ],
+        tooltip: {
+            trigger: 'axis',
+        },
+        legend: {
+            show: true,
+            textStyle: {
+                color: 'primary',
+            },
+        },
+    }
+}
+
+export const getServerSideProps = async (
+    context: GetServerSidePropsContext
+) => {
+    const contributionByTypeData = await getContributionByType(
+        context.query.id as string
+    )
+    const contributionByDayData = await getContributionsByDay(
+        context.query.id as string
+    )
+
+    console.log(contributionByDayData)
 
     return {
         props: {
-            contributionByTypeData: contributionByData,
+            contributionByTypeData,
+            contributionByDayData,
         },
     }
 }
