@@ -21,7 +21,7 @@ export const getContributionsByDay = async (annotator_id: string) => {
         FROM annotation
         WHERE timestamp >= EXTRACT (epoch FROM (CURRENT_DATE - INTERVAL '14 days')) -- Start date 14 days ago
           AND timestamp <= EXTRACT (epoch FROM CURRENT_DATE + INTERVAL '1 day')     -- End date today (inclusive)
-          AND annotator_id = 'KvgYw3yiXshBeiViHJzXhyZIjyO2'
+          AND annotator_id = ${annotator_id}
         GROUP BY TO_CHAR(DATE_TRUNC('day', to_timestamp(timestamp)), 'yyyy-MM-dd'))
         SELECT TO_CHAR(all_days.date, 'yyyy-MM-dd') AS date,
        TO_CHAR(all_days.date, 'Day')                   AS day_of_week,
@@ -31,5 +31,20 @@ export const getContributionsByDay = async (annotator_id: string) => {
         ON all_days.date = annotation_counts.date
         ORDER BY all_days.date;
 
+    `
+}
+
+export const getContributionGroupedByVideoId = async (annotator_id: string) => {
+    return sql`
+        SELECT i.video_name                                                 as video_id,
+               SUM(CASE WHEN c.annotation_id IS NOT NULL THEN 1 ELSE 0 END) as num_crops,
+               SUM(CASE WHEN c.annotation_id IS NULL THEN 1 ELSE 0 END)     as num_no_crops
+        FROM annotation a
+                 LEFT JOIN
+             crop c on a.annotation_id = c.annotation_id
+                 JOIN
+             image i on a.image_id = i.image_id
+        WHERE annotator_id = ${annotator_id}
+        GROUP BY i.video_name;
     `
 }

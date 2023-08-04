@@ -13,6 +13,7 @@ import { firebaseAuth } from '@/lib/firebase'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import {
     getContributionByType,
+    getContributionGroupedByVideoId,
     getContributionsByDay,
 } from '@/lib/dashboardQueries'
 import dayjs from 'dayjs'
@@ -20,11 +21,14 @@ import dayjs from 'dayjs'
 interface Props {
     contributionByTypeData: EChartsOption
     contributionByDayData: EChartsOption
+    contributionGroupedByVideoIdData: EChartsOption
 }
+
 const ContributionsPage: NextPage<Props> = (props) => {
     const [cookie] = useCookies(['username'])
     const [donutData, setDonutData] = useState<any>({})
     const [timelineData, setTimelineData] = useState<any>({})
+    const [multiBarChartData, setMultiBarChartData] = useState<any>({})
 
     useEffect(() => {
         setDonutData(contributionByTypeTemplate(props.contributionByTypeData))
@@ -33,6 +37,12 @@ const ContributionsPage: NextPage<Props> = (props) => {
     useEffect(() => {
         setTimelineData(contributionByDayTemplate(props.contributionByDayData))
     }, [props.contributionByDayData])
+
+    useEffect(() => {
+        setMultiBarChartData(
+            multiBarChartTemplate(props.contributionGroupedByVideoIdData)
+        )
+    }, [props.contributionGroupedByVideoIdData])
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -44,7 +54,7 @@ const ContributionsPage: NextPage<Props> = (props) => {
                     </Typography>
                 </Container>
                 <Grid container spacing={3}>
-                    <Grid xs={12} md={6} lg={3}>
+                    <Grid xs={12} md={6} xl={3}>
                         <SingleStatWithImagePanel
                             value={123}
                             subtitle={'days logged in'}
@@ -53,7 +63,7 @@ const ContributionsPage: NextPage<Props> = (props) => {
                             }
                         />
                     </Grid>
-                    <Grid xs={12} md={6} lg={3}>
+                    <Grid xs={12} md={6} xl={3}>
                         <SingleStatWithImagePanel
                             value={1111}
                             subtitle={'total contributions'}
@@ -62,7 +72,7 @@ const ContributionsPage: NextPage<Props> = (props) => {
                             }
                         />
                     </Grid>
-                    <Grid xs={12} md={6} lg={3}>
+                    <Grid xs={12} md={6} xl={3}>
                         <SingleStatWithImagePanel
                             value={'#1'}
                             subtitle={'top contributor'}
@@ -71,7 +81,7 @@ const ContributionsPage: NextPage<Props> = (props) => {
                             }
                         />
                     </Grid>
-                    <Grid xs={12} md={6} lg={3}>
+                    <Grid xs={12} md={6} xl={3}>
                         <SingleStatWithImagePanel
                             value={'30%'}
                             subtitle={'overall contribution'}
@@ -80,45 +90,24 @@ const ContributionsPage: NextPage<Props> = (props) => {
                             }
                         />
                     </Grid>
-                    <Grid xs={12} md={6}>
+                    <Grid xs={12} md={6} lg={4}>
                         <ChartPanelWithTitle
                             options={donutData}
                             title={'Contribution by type'}
                         />
                     </Grid>
-                    <Grid xs={12} md={6}>
+                    <Grid xs={12} md={6} lg={8}>
                         <ChartPanelWithTitle
                             options={timelineData}
                             title={'Contribution timeline'}
                         />
                     </Grid>
-                    {/*    <Grid xs={12}>*/}
-                    {/*        <ChartPanelWithTitle*/}
-                    {/*            options={{*/}
-                    {/*                legend: {},*/}
-                    {/*                tooltip: {},*/}
-                    {/*                dataset: {*/}
-                    {/*                    source: [*/}
-                    {/*                        ['product', '2015', '2016', '2017'],*/}
-                    {/*                        ['Matcha Latte', 43.3, 85.8, 93.7],*/}
-                    {/*                        ['Milk Tea', 83.1, 73.4, 55.1],*/}
-                    {/*                        ['Cheese Cocoa', 86.4, 65.2, 82.5],*/}
-                    {/*                        ['Walnut Brownie', 72.4, 53.9, 39.1],*/}
-                    {/*                    ],*/}
-                    {/*                },*/}
-                    {/*                xAxis: { type: 'category' },*/}
-                    {/*                yAxis: {},*/}
-                    {/*                // Declare several bar series, each will be mapped*/}
-                    {/*                // to a column of dataset.source by default.*/}
-                    {/*                series: [*/}
-                    {/*                    { type: 'bar' },*/}
-                    {/*                    { type: 'bar' },*/}
-                    {/*                    { type: 'bar' },*/}
-                    {/*                ],*/}
-                    {/*            }}*/}
-                    {/*            title={'Annotations grouped by video name'}*/}
-                    {/*        />*/}
-                    {/*    </Grid>*/}
+                    <Grid xs={12}>
+                        <ChartPanelWithTitle
+                            options={multiBarChartData}
+                            title={'Annotations grouped by video name'}
+                        />
+                    </Grid>
                     {/*    <Grid xs={6}>*/}
                     {/*        <ChartPanelWithTitle*/}
                     {/*            options={{*/}
@@ -293,6 +282,33 @@ const contributionByDayTemplate = (data: any) => {
     }
 }
 
+const multiBarChartTemplate = (data: any) => {
+    return {
+        tooltip: {
+            trigger: 'axis',
+        },
+        yAxis: {
+            type: 'value',
+        },
+        xAxis: {
+            type: 'category',
+            data: data.map((d: any) => d.video_id),
+        },
+        series: [
+            {
+                name: 'No Paimon',
+                type: 'bar',
+                data: data.map((d: any) => d.num_no_crops),
+            },
+            {
+                name: 'Paimon',
+                type: 'bar',
+                data: data.map((d: any) => d.num_crops),
+            },
+        ],
+    }
+}
+
 export const getServerSideProps = async (
     context: GetServerSidePropsContext
 ) => {
@@ -302,13 +318,14 @@ export const getServerSideProps = async (
     const contributionByDayData = await getContributionsByDay(
         context.query.id as string
     )
-
-    console.log(contributionByDayData)
+    const contributionGroupedByVideoIdData =
+        await getContributionGroupedByVideoId(context.query.id as string)
 
     return {
         props: {
             contributionByTypeData,
             contributionByDayData,
+            contributionGroupedByVideoIdData,
         },
     }
 }
