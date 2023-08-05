@@ -1,221 +1,383 @@
-import { useRouter } from 'next/router'
-import { Box, Grid, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import Navbar from '@/components/Navbar'
-import { ContributionDetailsList } from '@/components/ContributionDetailsList'
-import { MongoClient } from 'mongodb'
-import { configDotenv } from 'dotenv'
-import { GetServerSidePropsContext } from 'next'
-import { useAuthState } from 'react-firebase-hooks/auth'
+import Grid from '@mui/system/Unstable_Grid'
+import { Container } from '@mui/material'
+import { useCookies } from 'react-cookie'
+import SingleStatWithImagePanel from '@/components/dashboard/SingleStatWithImagePanel'
+import ChartPanelWithTitle from '@/components/dashboard/ChartPanelWithTitle'
+import { EChartsOption } from 'echarts'
+import { GetServerSideProps, GetServerSidePropsContext, NextPage } from 'next'
+import { useEffect, useState } from 'react'
+import sql from '@/lib/postgres'
 import { firebaseAuth } from '@/lib/firebase'
-import { useEffect } from 'react'
-import Loading from '@/components/Loading'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import {
+    getContributionByType,
+    getContributionGroupedByVideoId,
+    getContributionRankAndPercentage,
+    getContributionsByDay,
+    getNumberOfDaysLoggedIn,
+    getTotalAnnotations,
+} from '@/lib/dashboardQueries'
+import dayjs from 'dayjs'
 
-configDotenv()
-
-interface PersonalContributionProps {
-    doughnutData: any
-    lineChartData: any
-    contributionDetails: any
+interface Props {
+    contributionByTypeData: EChartsOption
+    contributionByDayData: EChartsOption
+    contributionGroupedByVideoIdData: EChartsOption
+    daysLoggedIn: number
+    totalContributions: number
+    topContributor: string
+    overallContribution: string
 }
 
-type MyQuery = {
-    id: string
-}
-
-const borderColors = [
-    'rgb(178, 204, 12)',
-    'rgb(112, 61, 78)',
-    'rgb(22, 1, 175)',
-    'rgb(108, 114, 102)',
-    'rgb(188, 130, 221)',
-    'rgb(155, 138, 153)',
-    'rgb(6, 7, 38)',
-    'rgb(150, 204, 89)',
-    'rgb(83, 96, 77)',
-    'rgb(201, 175, 151)',
-    'rgb(0, 0, 0)',
-    'rgb(32, 45, 22)',
-    'rgb(35, 28, 45)',
-    'rgb(179, 224, 216)',
-    'rgb(211, 153, 150)',
-    'rgb(53, 60, 112)',
-    'rgb(179, 198, 201)',
-    'rgb(149, 139, 183)',
-    'rgb(198, 156, 117)',
-    'rgb(162, 141, 168)',
-    'rgb(19, 0, 45)',
-    'rgb(50, 73, 47)',
-    'rgb(36, 38, 51)',
-    'rgb(67, 92, 107)',
-    'rgb(102, 124, 13)',
-    'rgb(216, 92, 75)',
-    'rgb(47, 96, 25)',
-    'rgb(27, 34, 73)',
-    'rgb(6, 33, 12)',
-    'rgb(249, 0, 66)',
-    'rgb(2, 2, 2)',
-    'rgb(221, 221, 221)',
-    'rgb(105, 165, 71)',
-    'rgb(149, 173, 105)',
-    'rgb(234, 60, 168)',
-    'rgb(124, 119, 77)',
-    'rgb(86, 56, 13)',
-    'rgb(110, 72, 117)',
-    'rgb(35, 13, 18)',
-    'rgb(76, 57, 31)',
-] as const
-
-const colors = [
-    'rgba(178, 204, 1,0.5)',
-    'rgba(112, 61, 7,0.5)',
-    'rgba(22, 1, 17,0.5)',
-    'rgba(108, 114, 10,0.5)',
-    'rgba(188, 130, 22,0.5)',
-    'rgba(155, 138, 15,0.5)',
-    'rgba(6, 7, 3,0.5)',
-    'rgba(150, 204, 8,0.5)',
-    'rgba(83, 96, 7,0.5)',
-    'rgba(201, 175, 15,0.5)',
-    'rgba(0, 0, 0,0.5)',
-    'rgba(32, 45, 2,0.5)',
-    'rgba(35, 28, 4,0.5)',
-    'rgba(179, 224, 21,0.5)',
-    'rgba(211, 153, 15,0.5)',
-    'rgba(53, 60, 11,0.5)',
-    'rgba(179, 198, 20,0.5)',
-    'rgba(149, 139, 18,0.5)',
-    'rgba(198, 156, 11,0.5)',
-    'rgba(162, 141, 16,0.5)',
-    'rgba(19, 0, 4,0.5)',
-    'rgba(50, 73, 4,0.5)',
-    'rgba(36, 38, 5,0.5)',
-    'rgba(67, 92, 10,0.5)',
-    'rgba(102, 124, 1,0.5)',
-    'rgba(216, 92, 7,0.5)',
-    'rgba(47, 96, 2,0.5)',
-    'rgba(27, 34, 7,0.5)',
-    'rgba(6, 33, 1,0.5)',
-    'rgba(249, 0, 6,0.5)',
-    'rgba(2, 2, 2 ,0.5)',
-    'rgba(221, 221, 22,0.5)',
-    'rgba(105, 165, 7,0.5)',
-    'rgba(149, 173, 10,0.5)',
-    'rgba(234, 60, 16,0.5)',
-    'rgba(124, 119, 7,0.5)',
-    'rgba(86, 56, 1,0.5)',
-    'rgba(110, 72, 11,0.5)',
-    'rgba(35, 13, 1,0.5)',
-    'rgba(76, 57, 3,0.5)',
-] as const
-
-export default function PersonalContribution(props: PersonalContributionProps) {
-    const [user, loading, error] = useAuthState(firebaseAuth)
-    const router = useRouter()
+const ContributionsPage: NextPage<Props> = (props) => {
+    const [cookie] = useCookies(['username'])
+    const [username, setUsername] = useState<string>('')
+    const [donutData, setDonutData] = useState<any>({})
+    const [timelineData, setTimelineData] = useState<any>({})
+    const [multiBarChartData, setMultiBarChartData] = useState<any>({})
+    const [daysLoggedIn, setDaysLoggedIn] = useState<number>(NaN)
+    const [totalContributions, setTotalContributions] = useState<number>(NaN)
+    const [topContributor, setTopContributor] = useState<string>('')
+    const [overallContribution, setOverallContribution] = useState<string>('')
 
     useEffect(() => {
-        if (!user) {
-            router.push('/')
-        }
-    }, [user])
+        setUsername(cookie.username)
+    }, [cookie])
 
-    if (loading || !user) {
-        return <Loading />
-    }
-    const query = router.query as MyQuery
+    useEffect(() => {
+        setDonutData(contributionByTypeTemplate(props.contributionByTypeData))
+    }, [props.contributionByTypeData])
+
+    useEffect(() => {
+        setTimelineData(contributionByDayTemplate(props.contributionByDayData))
+    }, [props.contributionByDayData])
+
+    useEffect(() => {
+        setMultiBarChartData(
+            multiBarChartTemplate(props.contributionGroupedByVideoIdData)
+        )
+    }, [props.contributionGroupedByVideoIdData])
+
+    useEffect(() => {
+        setDaysLoggedIn(props.daysLoggedIn)
+    }, [props.daysLoggedIn])
+
+    useEffect(() => {
+        setTotalContributions(props.totalContributions)
+    }, [props.totalContributions])
+
+    useEffect(() => {
+        setTopContributor(props.topContributor)
+    }, [props.topContributor])
+
+    useEffect(() => {
+        setOverallContribution(props.overallContribution)
+    }, [props.overallContribution])
 
     return (
-        <Box component={'div'}>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <Navbar />
-            <Box component={'div'} sx={{ padding: '1rem' }}>
-                <Typography variant={'h1'}>
-                    {query.id}&apos;s Contribution
-                </Typography>
-                <Grid container spacing={2}>
-                    {/*<Grid*/}
-                    {/*    item*/}
-                    {/*    md={6}*/}
-                    {/*    sx={{*/}
-                    {/*        width: "100%",*/}
-                    {/*    }}*/}
-                    {/*>*/}
-                    {/*    <ContributionProportion data={props.doughnutData}/>*/}
-
-                    {/*</Grid>*/}
-                    {/*<Grid*/}
-                    {/*    item*/}
-                    {/*    md={6}*/}
-                    {/*    sx={{*/}
-                    {/*        width: "100%",*/}
-                    {/*    }}*/}
-                    {/*>*/}
-                    {/*    <ContributionHistory data={props.lineChartData}/>*/}
-                    {/*</Grid>*/}
-                    <Grid item xs={12}>
-                        <ContributionDetailsList
-                            crops={props.contributionDetails}
+            <Box sx={{ width: '100vw', flex: 1, p: 4 }}>
+                <Container>
+                    <Typography variant={'h1'}>
+                        {username}&apos;s contributions
+                    </Typography>
+                </Container>
+                <Grid container spacing={3}>
+                    <Grid xs={12} md={6} xl={3}>
+                        <SingleStatWithImagePanel
+                            value={daysLoggedIn}
+                            subtitle={'days logged in'}
+                            url={
+                                'https://res.cloudinary.com/dmqxgg2mj/image/upload/v1691120500/crowdmon-website-assets/f6d9vwyjtbvqjhyll5yx.png'
+                            }
                         />
                     </Grid>
+                    <Grid xs={12} md={6} xl={3}>
+                        <SingleStatWithImagePanel
+                            value={totalContributions}
+                            subtitle={'total contributions'}
+                            url={
+                                'https://res.cloudinary.com/dmqxgg2mj/image/upload/v1691122210/crowdmon-website-assets/zytomni6waus6vezkip9.png'
+                            }
+                        />
+                    </Grid>
+                    <Grid xs={12} md={6} xl={3}>
+                        <SingleStatWithImagePanel
+                            value={topContributor}
+                            subtitle={'top contributor'}
+                            url={
+                                'https://res.cloudinary.com/dmqxgg2mj/image/upload/v1691122746/crowdmon-website-assets/bqwjb4xc6ccuhf4hjfqi.png'
+                            }
+                        />
+                    </Grid>
+                    <Grid xs={12} md={6} xl={3}>
+                        <SingleStatWithImagePanel
+                            value={overallContribution}
+                            subtitle={'of overall contribution'}
+                            url={
+                                'https://res.cloudinary.com/dmqxgg2mj/image/upload/v1691125914/crowdmon-website-assets/fcgfwxuzounnme7bncmf.png'
+                            }
+                        />
+                    </Grid>
+                    <Grid xs={12} md={6} lg={4}>
+                        <ChartPanelWithTitle
+                            options={donutData}
+                            title={'Contribution by type'}
+                        />
+                    </Grid>
+                    <Grid xs={12} md={6} lg={8}>
+                        <ChartPanelWithTitle
+                            options={timelineData}
+                            title={'Contribution timeline'}
+                        />
+                    </Grid>
+                    <Grid xs={12}>
+                        <ChartPanelWithTitle
+                            options={multiBarChartData}
+                            title={'Annotations grouped by video name'}
+                        />
+                    </Grid>
+                    {/*TODO : add annotation speed to crop table, so can show average annotation speed */}
+                    {/**/}
+
+                    {/*    <Grid xs={6}>*/}
+                    {/*        <ChartPanelWithTitle*/}
+                    {/*            options={{*/}
+                    {/*                title: [*/}
+                    {/*                    {*/}
+                    {/*                        text: 'Michelson-Morley Experiment',*/}
+                    {/*                        left: 'center',*/}
+                    {/*                    },*/}
+                    {/*                    {*/}
+                    {/*                        text: 'upper: Q3 + 1.5 * IQR \nlower: Q1 - 1.5 * IQR',*/}
+                    {/*                        borderColor: '#999',*/}
+                    {/*                        borderWidth: 1,*/}
+                    {/*                        textStyle: {*/}
+                    {/*                            fontWeight: 'normal',*/}
+                    {/*                            fontSize: 14,*/}
+                    {/*                            lineHeight: 20,*/}
+                    {/*                        },*/}
+                    {/*                        left: '10%',*/}
+                    {/*                        top: '90%',*/}
+                    {/*                    },*/}
+                    {/*                ],*/}
+                    {/*                dataset: [*/}
+                    {/*                    {*/}
+                    {/*                        // prettier-ignore*/}
+                    {/*                        source: [*/}
+                    {/*                            [850, 740, 900, 1070, 930, 850, 950, 980, 980, 880, 1000, 980, 930, 650, 760, 810, 1000, 1000, 960, 960],*/}
+                    {/*                            [960, 940, 960, 940, 880, 800, 850, 880, 900, 840, 830, 790, 810, 880, 880, 830, 800, 790, 760, 800],*/}
+                    {/*                            [880, 880, 880, 860, 720, 720, 620, 860, 970, 950, 880, 910, 850, 870, 840, 840, 850, 840, 840, 840],*/}
+                    {/*                            [890, 810, 810, 820, 800, 770, 760, 740, 750, 760, 910, 920, 890, 860, 880, 720, 840, 850, 850, 780],*/}
+                    {/*                            [890, 840, 780, 810, 760, 810, 790, 810, 820, 850, 870, 870, 810, 740, 810, 940, 950, 800, 810, 870]*/}
+                    {/*                        ],*/}
+                    {/*                    },*/}
+                    {/*                    {*/}
+                    {/*                        transform: {*/}
+                    {/*                            type: 'boxplot',*/}
+                    {/*                            config: {*/}
+                    {/*                                itemNameFormatter:*/}
+                    {/*                                    'expr {value}',*/}
+                    {/*                            },*/}
+                    {/*                        },*/}
+                    {/*                    },*/}
+                    {/*                    {*/}
+                    {/*                        fromDatasetIndex: 1,*/}
+                    {/*                        fromTransformResult: 1,*/}
+                    {/*                    },*/}
+                    {/*                ],*/}
+                    {/*                tooltip: {*/}
+                    {/*                    trigger: 'item',*/}
+                    {/*                    axisPointer: {*/}
+                    {/*                        type: 'shadow',*/}
+                    {/*                    },*/}
+                    {/*                },*/}
+                    {/*                grid: {*/}
+                    {/*                    left: '10%',*/}
+                    {/*                    right: '10%',*/}
+                    {/*                    bottom: '15%',*/}
+                    {/*                },*/}
+                    {/*                xAxis: {*/}
+                    {/*                    type: 'category',*/}
+                    {/*                    boundaryGap: true,*/}
+                    {/*                    nameGap: 30,*/}
+                    {/*                    splitArea: {*/}
+                    {/*                        show: false,*/}
+                    {/*                    },*/}
+                    {/*                    splitLine: {*/}
+                    {/*                        show: false,*/}
+                    {/*                    },*/}
+                    {/*                },*/}
+                    {/*                yAxis: {*/}
+                    {/*                    type: 'value',*/}
+                    {/*                    name: 'km/s minus 299,000',*/}
+                    {/*                    splitArea: {*/}
+                    {/*                        show: true,*/}
+                    {/*                    },*/}
+                    {/*                },*/}
+                    {/*                series: [*/}
+                    {/*                    {*/}
+                    {/*                        name: 'boxplot',*/}
+                    {/*                        type: 'boxplot',*/}
+                    {/*                        datasetIndex: 1,*/}
+                    {/*                    },*/}
+                    {/*                    {*/}
+                    {/*                        name: 'outlier',*/}
+                    {/*                        type: 'scatter',*/}
+                    {/*                        datasetIndex: 2,*/}
+                    {/*                    },*/}
+                    {/*                ],*/}
+                    {/*            }}*/}
+                    {/*            title={'Average annotation speed by video'}*/}
+                    {/*        />*/}
+                    {/*    </Grid>*/}
                 </Grid>
             </Box>
         </Box>
     )
 }
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-    const { id } = context.query
-
+const contributionByTypeTemplate = (data: any) => {
     return {
-        props: {
-            contributionDetails: await getUserCrops(id as string),
-            // doughnutData: await getUserContributionProportion(id),
+        // doughnut chart
+        tooltip: {
+            trigger: 'item',
+        },
+        legend: {
+            top: '5%',
+            left: 'center',
+        },
+        series: [
+            {
+                name: 'Access From',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                avoidLabelOverlap: false,
+                label: {
+                    show: false,
+                    position: 'center',
+                },
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: 40,
+                        fontWeight: 'bold',
+                    },
+                },
+                labelLine: {
+                    show: false,
+                },
+                data,
+            },
+        ],
+    }
+}
+
+const contributionByDayTemplate = (data: any) => {
+    return {
+        xAxis: {
+            type: 'category',
+            data: data.slice(0, 7).map((d: any) => d.day_of_week),
+        },
+        yAxis: {
+            type: 'value',
+            name: 'Number of annotations',
+            nameLocation: 'center',
+            nameGap: 50,
+        },
+        series: [
+            {
+                data: data.slice(0, 7).map((d: any) => d.annotation_count),
+                type: 'line',
+                name: 'Last week',
+                smooth: true,
+            },
+            {
+                data: data.slice(7, 14).map((d: any) => d.annotation_count),
+                type: 'line',
+                name: 'This week',
+                smooth: true,
+            },
+        ],
+        tooltip: {
+            trigger: 'axis',
+        },
+        legend: {
+            show: true,
         },
     }
 }
 
-async function getUserCrops(id: string) {
-    const client = new MongoClient(process.env.MONGODB_URI!)
-    const db = client.db('crowdmon')
-    const collection = db.collection('crops')
-    const crops = await collection
-        .find({
-            contributorId: id,
-        })
-        .toArray()
-    const cropsIntoCorrectFormat = crops.map((crop) => {
-        return {
-            video_id: crop.videoId,
-            image_id: crop.imageId,
-            annotation_class: crop.annotationClass,
-            annotation_startX: crop.annotationStartX,
-            annotation_startY: crop.annotationStartY,
-            annotation_width: crop.annotationWidth,
-            annotation_height: crop.annotationHeight,
-            contributor_id: crop.contributorId,
-            timestamp: crop.timestamp,
-        }
-    })
-    return cropsIntoCorrectFormat
+const multiBarChartTemplate = (data: any) => {
+    return {
+        tooltip: {
+            trigger: 'axis',
+        },
+        legend: {
+            show: true,
+        },
+        yAxis: {
+            type: 'value',
+        },
+        xAxis: {
+            type: 'category',
+            data: data.map((d: any) => d.video_id),
+        },
+        series: [
+            {
+                name: 'No Paimon',
+                type: 'bar',
+                data: data.map((d: any) => d.num_no_crops),
+            },
+            {
+                name: 'Paimon',
+                type: 'bar',
+                data: data.map((d: any) => d.num_crops),
+            },
+        ],
+    }
 }
 
-// async function getUserContributionProportion(id: string){
-//     const crops = await getUserCrops(id)
-//     const accumulator: Record<string, number> = {}
-//     for (const crop of crops) {
-//         if (crop.video_id in accumulator) {
-//             accumulator[crop.video_id] += 1
-//         } else {
-//             accumulator[crop.video_id] = 1
-//         }
-//     }
-//     const length = Object.keys(accumulator).length
-//     const data = {
-//         labels: Object.keys(accumulator),
-//         datasets: {
-//             label: "Contribution Per Video",
-//             backgroundColor: colors.slice(0, length),
-//             borderColor: borderColors.slice(0, length),
-//             data: Object.values(accumulator)
-//         }
-//     }
-//     return data
-// }
+export const getServerSideProps = async (
+    context: GetServerSidePropsContext
+) => {
+    const contributionByTypeData = await getContributionByType(
+        context.query.id as string
+    )
+    const contributionByDayData = await getContributionsByDay(
+        context.query.id as string
+    )
+    const contributionGroupedByVideoIdData =
+        await getContributionGroupedByVideoId(context.query.id as string)
+
+    const daysLoggedIn = await getNumberOfDaysLoggedIn(
+        context.query.id as string
+    )
+
+    const totalContributions = await getTotalAnnotations(
+        context.query.id as string
+    )
+
+    const contributionRankAndPercentage =
+        await getContributionRankAndPercentage(context.query.id as string)
+
+    const ranking = contributionRankAndPercentage?.rank
+    const percentage = contributionRankAndPercentage?.percentage
+
+    return {
+        props: {
+            contributionByTypeData,
+            contributionByDayData,
+            contributionGroupedByVideoIdData,
+            daysLoggedIn,
+            totalContributions,
+            topContributor: ranking ? `# ${ranking}` : 'N/A',
+            overallContribution: percentage ? `${percentage} %` : 'N/A',
+        },
+    }
+}
+
+export default ContributionsPage

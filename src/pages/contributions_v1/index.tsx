@@ -91,7 +91,9 @@ interface ContributionPageProps {
     }>
 }
 
-export default function ContributionsPage(props: ContributionPageProps) {
+export default function ContributionsPageDeprecated(
+    props: ContributionPageProps
+) {
     const [user, loading, error] = useAuthState(firebaseAuth)
     const router = useRouter()
 
