@@ -18,12 +18,12 @@ export const getContributionsByDay = async (annotator_id: string) => {
     return sql`
         WITH all_days
                  AS (SELECT (CURRENT_DATE - INTERVAL '13 days') ::date + generate_series(0, 13) AS date), annotation_counts AS (
-        SELECT TO_CHAR(DATE_TRUNC('day', to_timestamp(timestamp)), 'yyyy-MM-dd'):: date AS date, COUNT (*) AS annotation_count
+        SELECT TO_CHAR(DATE_TRUNC('day', TIMEZONE('Asia/Kuala_Lumpur',to_timestamp(timestamp))), 'yyyy-MM-dd'):: date AS date, COUNT (*) AS annotation_count
         FROM annotation
         WHERE timestamp >= EXTRACT (epoch FROM (CURRENT_DATE - INTERVAL '14 days')) -- Start date 14 days ago
           AND timestamp <= EXTRACT (epoch FROM CURRENT_DATE + INTERVAL '1 day')     -- End date today (inclusive)
           AND annotator_id = ${annotator_id}
-        GROUP BY TO_CHAR(DATE_TRUNC('day', to_timestamp(timestamp)), 'yyyy-MM-dd'))
+        GROUP BY TO_CHAR(DATE_TRUNC('day', TIMEZONE('Asia/Kuala_Lumpur',to_timestamp(timestamp))), 'yyyy-MM-dd'))
         SELECT TO_CHAR(all_days.date, 'yyyy-MM-dd') AS date,
        TO_CHAR(all_days.date, 'Day')                   AS day_of_week,
        COALESCE(annotation_counts.annotation_count, 0) AS annotation_count
@@ -53,7 +53,7 @@ export const getContributionGroupedByVideoId = async (annotator_id: string) => {
 export const getNumberOfDaysLoggedIn = async (annotator_id: string) => {
     type Data = { num_logged_in_days: number }
     const res = await sql<Data[]>`
-        SELECT COUNT(DISTINCT TO_CHAR(DATE_TRUNC('day', to_timestamp(timestamp)), 'yyyy-MM-dd')) AS num_logged_in_days
+        SELECT COUNT(DISTINCT TO_CHAR(DATE_TRUNC('day', TIMEZONE('Asia/Kuala_Lumpur', to_timestamp(timestamp))), 'yyyy-MM-dd')) AS num_logged_in_days
         FROM annotation
                  JOIN crop c on annotation.annotation_id = c.annotation_id
         WHERE annotator_id = ${annotator_id};
