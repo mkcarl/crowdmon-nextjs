@@ -7,7 +7,7 @@ import SingleStatWithImagePanel from '@/components/dashboard/SingleStatWithImage
 import ChartPanelWithTitle from '@/components/dashboard/ChartPanelWithTitle'
 import { EChartsOption } from 'echarts'
 import { GetServerSideProps, GetServerSidePropsContext, NextPage } from 'next'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import sql from '@/lib/postgres'
 import { firebaseAuth } from '@/lib/firebase'
 import { useAuthState } from 'react-firebase-hooks/auth'
@@ -20,6 +20,8 @@ import {
     getTotalAnnotations,
 } from '@/lib/dashboardQueries'
 import dayjs from 'dayjs'
+import { useRouter } from 'next/router'
+import Loading from '@/components/Loading'
 
 interface Props {
     contributionByTypeData: EChartsOption
@@ -34,6 +36,9 @@ interface Props {
 const ContributionsPage: NextPage<Props> = (props) => {
     const [cookie] = useCookies(['username'])
     const [username, setUsername] = useState<string>('')
+    const [user, loading, error] = useAuthState(firebaseAuth)
+    const router = useRouter()
+    // data for the charts
     const [donutData, setDonutData] = useState<any>({})
     const [timelineData, setTimelineData] = useState<any>({})
     const [multiBarChartData, setMultiBarChartData] = useState<any>({})
@@ -75,6 +80,17 @@ const ContributionsPage: NextPage<Props> = (props) => {
     useEffect(() => {
         setOverallContribution(props.overallContribution)
     }, [props.overallContribution])
+
+    // handle auth
+    useEffect(() => {
+        if (!user) {
+            router.push('/')
+        }
+    }, [user])
+
+    if (loading || !user) {
+        return <Loading />
+    }
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
