@@ -5,26 +5,29 @@ import { firebaseAuth, firebaseFirestore } from '@/lib/firebase'
 import Loading from '@/components/Loading'
 import { doc, getDoc, setDoc } from '@firebase/firestore'
 import { useCookies } from 'react-cookie'
+import { useEffect, useState } from 'react'
+import { NextPage } from 'next'
 
-export default function LandingPage() {
+const LandingPage: NextPage = () => {
     const [user, loading, userError] = useAuthState(firebaseAuth)
     const [signInWithGoogle, _, __, loginError] =
         useSignInWithGoogle(firebaseAuth)
     const router = useRouter()
     const [userCookies, setUserCookies] = useCookies(['username'])
+    const [loggingIn, setLoggingIn] = useState(false)
+
+    useEffect(() => {
+        if (user && !loggingIn) {
+            router.push('/home')
+        }
+    }, [user, loggingIn])
 
     if (loading) {
         return <Loading />
     }
-
-    if (user) {
-        router.push('/home')
-        return <Loading />
-    }
-
     const handleOnLogin = async () => {
         const results = await signInWithGoogle()
-
+        setLoggingIn(!!results)
         if (!results) return
         const docRef = doc(firebaseFirestore, 'user', results.user.uid)
         const info = await getDoc(docRef)
@@ -33,13 +36,13 @@ export default function LandingPage() {
             name: results.user.displayName,
             bio: '',
         }
-
-        if (!info.exists()) {
+        if (!info!.exists()) {
             await setDoc(docRef, data)
             setUserCookies('username', results.user.displayName)
         } else {
             setUserCookies('username', info.get('name'))
         }
+        setLoggingIn(false)
     }
 
     return (
@@ -65,8 +68,9 @@ export default function LandingPage() {
                         variant={'contained'}
                         color={'secondary'}
                         onClick={handleOnLogin}
+                        disabled={loggingIn}
                     >
-                        Get started
+                        {loggingIn ? 'Logging in...' : 'Get started'}
                     </Button>
                 </Box>
             </Grid>
@@ -102,3 +106,5 @@ export default function LandingPage() {
         </Grid>
     )
 }
+
+export default LandingPage
