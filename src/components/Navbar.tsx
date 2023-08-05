@@ -24,19 +24,19 @@ export default function Navbar() {
     const [username, setUsername] = useState('')
 
     useEffect(() => {
-        if (user) {
+        if (user && !!usernameCookies.username) {
             setUsername(usernameCookies.username)
         } else {
-            if (!loading) {
+            if (!loading || !usernameCookies.username) {
                 handleLogout()
             }
         }
     }, [user, usernameCookies])
 
     const handleLogout = async () => {
+        await router.push('/')
         await signOut()
         removeUsernameCookies('username')
-        await router.push('/')
     }
 
     return (

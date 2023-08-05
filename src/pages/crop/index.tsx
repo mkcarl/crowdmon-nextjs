@@ -1,8 +1,27 @@
 import { Box, Typography } from '@mui/material'
 import Navbar from '@/components/Navbar'
 import CroppingInterface from '@/components/crop/CroppingInterface'
+import { useEffect } from 'react'
+import Loading from '@/components/Loading'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { firebaseAuth } from '@/lib/firebase'
+import { useRouter } from 'next/router'
+import { NextPage } from 'next'
 
-export default function cropv2() {
+const Crop: NextPage = () => {
+    const [user, loading, error] = useAuthState(firebaseAuth)
+    const router = useRouter()
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/')
+        }
+    }, [user])
+
+    if (loading || !user) {
+        return <Loading />
+    }
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
             <Navbar />
@@ -25,3 +44,5 @@ export default function cropv2() {
         </Box>
     )
 }
+
+export default Crop
