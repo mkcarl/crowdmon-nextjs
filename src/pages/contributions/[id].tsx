@@ -33,6 +33,7 @@ interface Props {
 
 const ContributionsPage: NextPage<Props> = (props) => {
     const [cookie] = useCookies(['username'])
+    const [username, setUsername] = useState<string>('')
     const [donutData, setDonutData] = useState<any>({})
     const [timelineData, setTimelineData] = useState<any>({})
     const [multiBarChartData, setMultiBarChartData] = useState<any>({})
@@ -40,6 +41,10 @@ const ContributionsPage: NextPage<Props> = (props) => {
     const [totalContributions, setTotalContributions] = useState<number>(NaN)
     const [topContributor, setTopContributor] = useState<string>('')
     const [overallContribution, setOverallContribution] = useState<string>('')
+
+    useEffect(() => {
+        setUsername(cookie.username)
+    }, [cookie])
 
     useEffect(() => {
         setDonutData(contributionByTypeTemplate(props.contributionByTypeData))
@@ -73,11 +78,11 @@ const ContributionsPage: NextPage<Props> = (props) => {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            {/*<Navbar />*/}
+            <Navbar />
             <Box sx={{ width: '100vw', flex: 1, p: 4 }}>
                 <Container>
                     <Typography variant={'h1'}>
-                        {'username'}&apos;s Contributions
+                        {username}&apos;s contributions
                     </Typography>
                 </Container>
                 <Grid container spacing={3}>
@@ -359,6 +364,9 @@ export const getServerSideProps = async (
     const contributionRankAndPercentage =
         await getContributionRankAndPercentage(context.query.id as string)
 
+    const ranking = contributionRankAndPercentage?.rank
+    const percentage = contributionRankAndPercentage?.percentage
+
     return {
         props: {
             contributionByTypeData,
@@ -366,8 +374,8 @@ export const getServerSideProps = async (
             contributionGroupedByVideoIdData,
             daysLoggedIn,
             totalContributions,
-            topContributor: `# ${contributionRankAndPercentage?.rank}`,
-            overallContribution: `${contributionRankAndPercentage?.percentage}%`,
+            topContributor: ranking ? `# ${ranking}` : 'N/A',
+            overallContribution: percentage ? `${percentage} %` : 'N/A',
         },
     }
 }
