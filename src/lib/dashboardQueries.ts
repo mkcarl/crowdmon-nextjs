@@ -5,9 +5,10 @@ export const getContributionByType = async (annotator_id: string) => {
     return sql`
         select 'bounding box' as name, count(*) as value
         from annotation
-                 left join crop c on annotation.annotation_id = c.annotation_id
+            left join crop c
+        on annotation.annotation_id = c.annotation_id
         where annotator_id = ${annotator_id};
-`
+    `
 }
 
 export const getContributionsByDay = async (annotator_id: string) => {
@@ -47,4 +48,48 @@ export const getContributionGroupedByVideoId = async (annotator_id: string) => {
         WHERE annotator_id = ${annotator_id}
         GROUP BY i.video_name;
     `
+}
+
+export const getNumberOfDaysLoggedIn = async (annotator_id: string) => {
+    type Data = { num_logged_in_days: number }
+    const res = await sql<Data[]>`
+        SELECT COUNT(DISTINCT TO_CHAR(DATE_TRUNC('day', to_timestamp(timestamp)), 'yyyy-MM-dd')) AS num_logged_in_days
+        FROM annotation
+                 JOIN crop c on annotation.annotation_id = c.annotation_id
+        WHERE annotator_id = ${annotator_id};
+    `
+    return res.pop()?.num_logged_in_days
+}
+
+export const getTotalAnnotations = async (annotator_id: string) => {
+    type Data = {
+        total_annotations: number
+    }
+    const res = await sql<Data[]>`
+        SELECT COUNT(*) AS total_annotations
+        FROM annotation
+        WHERE annotator_id = ${annotator_id};
+    `
+    return res.pop()?.total_annotations
+}
+
+export const getContributionRankAndPercentage = async (
+    annotator_id: string
+) => {
+    type Data = {
+        annotator_id: string
+        num_annotations: number
+        rank: number
+        percentage: number
+    }
+    const res = await sql<Data[]>`
+        SELECT annotator_id, COUNT(*) AS num_annotations,
+               RANK() OVER (ORDER BY COUNT(*) DESC) AS rank,
+                ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM annotation), 2) AS percentage
+        FROM annotation
+        WHERE annotator_id = ${annotator_id}
+        GROUP BY annotator_id
+        ORDER BY num_annotations DESC;
+`
+    return res.pop()
 }

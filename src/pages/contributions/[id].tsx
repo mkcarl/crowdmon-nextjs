@@ -14,7 +14,10 @@ import { useAuthState } from 'react-firebase-hooks/auth'
 import {
     getContributionByType,
     getContributionGroupedByVideoId,
+    getContributionRankAndPercentage,
     getContributionsByDay,
+    getNumberOfDaysLoggedIn,
+    getTotalAnnotations,
 } from '@/lib/dashboardQueries'
 import dayjs from 'dayjs'
 
@@ -22,6 +25,10 @@ interface Props {
     contributionByTypeData: EChartsOption
     contributionByDayData: EChartsOption
     contributionGroupedByVideoIdData: EChartsOption
+    daysLoggedIn: number
+    totalContributions: number
+    topContributor: string
+    overallContribution: string
 }
 
 const ContributionsPage: NextPage<Props> = (props) => {
@@ -29,6 +36,10 @@ const ContributionsPage: NextPage<Props> = (props) => {
     const [donutData, setDonutData] = useState<any>({})
     const [timelineData, setTimelineData] = useState<any>({})
     const [multiBarChartData, setMultiBarChartData] = useState<any>({})
+    const [daysLoggedIn, setDaysLoggedIn] = useState<number>(NaN)
+    const [totalContributions, setTotalContributions] = useState<number>(NaN)
+    const [topContributor, setTopContributor] = useState<string>('')
+    const [overallContribution, setOverallContribution] = useState<string>('')
 
     useEffect(() => {
         setDonutData(contributionByTypeTemplate(props.contributionByTypeData))
@@ -44,6 +55,22 @@ const ContributionsPage: NextPage<Props> = (props) => {
         )
     }, [props.contributionGroupedByVideoIdData])
 
+    useEffect(() => {
+        setDaysLoggedIn(props.daysLoggedIn)
+    }, [props.daysLoggedIn])
+
+    useEffect(() => {
+        setTotalContributions(props.totalContributions)
+    }, [props.totalContributions])
+
+    useEffect(() => {
+        setTopContributor(props.topContributor)
+    }, [props.topContributor])
+
+    useEffect(() => {
+        setOverallContribution(props.overallContribution)
+    }, [props.overallContribution])
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             {/*<Navbar />*/}
@@ -56,7 +83,7 @@ const ContributionsPage: NextPage<Props> = (props) => {
                 <Grid container spacing={3}>
                     <Grid xs={12} md={6} xl={3}>
                         <SingleStatWithImagePanel
-                            value={123}
+                            value={daysLoggedIn}
                             subtitle={'days logged in'}
                             url={
                                 'https://res.cloudinary.com/dmqxgg2mj/image/upload/v1691120500/crowdmon-website-assets/f6d9vwyjtbvqjhyll5yx.png'
@@ -65,7 +92,7 @@ const ContributionsPage: NextPage<Props> = (props) => {
                     </Grid>
                     <Grid xs={12} md={6} xl={3}>
                         <SingleStatWithImagePanel
-                            value={1111}
+                            value={totalContributions}
                             subtitle={'total contributions'}
                             url={
                                 'https://res.cloudinary.com/dmqxgg2mj/image/upload/v1691122210/crowdmon-website-assets/zytomni6waus6vezkip9.png'
@@ -74,7 +101,7 @@ const ContributionsPage: NextPage<Props> = (props) => {
                     </Grid>
                     <Grid xs={12} md={6} xl={3}>
                         <SingleStatWithImagePanel
-                            value={'#1'}
+                            value={topContributor}
                             subtitle={'top contributor'}
                             url={
                                 'https://res.cloudinary.com/dmqxgg2mj/image/upload/v1691122746/crowdmon-website-assets/bqwjb4xc6ccuhf4hjfqi.png'
@@ -83,8 +110,8 @@ const ContributionsPage: NextPage<Props> = (props) => {
                     </Grid>
                     <Grid xs={12} md={6} xl={3}>
                         <SingleStatWithImagePanel
-                            value={'30%'}
-                            subtitle={'overall contribution'}
+                            value={overallContribution}
+                            subtitle={'of overall contribution'}
                             url={
                                 'https://res.cloudinary.com/dmqxgg2mj/image/upload/v1691125914/crowdmon-website-assets/fcgfwxuzounnme7bncmf.png'
                             }
@@ -321,11 +348,26 @@ export const getServerSideProps = async (
     const contributionGroupedByVideoIdData =
         await getContributionGroupedByVideoId(context.query.id as string)
 
+    const daysLoggedIn = await getNumberOfDaysLoggedIn(
+        context.query.id as string
+    )
+
+    const totalContributions = await getTotalAnnotations(
+        context.query.id as string
+    )
+
+    const contributionRankAndPercentage =
+        await getContributionRankAndPercentage(context.query.id as string)
+
     return {
         props: {
             contributionByTypeData,
             contributionByDayData,
             contributionGroupedByVideoIdData,
+            daysLoggedIn,
+            totalContributions,
+            topContributor: `# ${contributionRankAndPercentage?.rank}`,
+            overallContribution: `${contributionRankAndPercentage?.percentage}%`,
         },
     }
 }
