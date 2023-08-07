@@ -12,26 +12,18 @@ export const getContributionByType = async (annotator_id: string) => {
 }
 
 export const getContributionsByDay = async (annotator_id: string) => {
-    const now = dayjs()
-    const lastWeekStart = now.subtract(7, 'day').startOf('day').unix()
-    const today = now.startOf('day').unix()
     return sql`
-        WITH all_days
-                 AS (SELECT (CURRENT_DATE - INTERVAL '13 days') ::date + generate_series(0, 13) AS date), annotation_counts AS (
-        SELECT TO_CHAR(DATE_TRUNC('day', TIMEZONE('Asia/Kuala_Lumpur',to_timestamp(timestamp))), 'yyyy-MM-dd'):: date AS date, COUNT (*) AS annotation_count
-        FROM annotation
-        WHERE timestamp >= EXTRACT (epoch FROM (CURRENT_DATE - INTERVAL '14 days')) -- Start date 14 days ago
-          AND timestamp <= EXTRACT (epoch FROM CURRENT_DATE + INTERVAL '1 day')     -- End date today (inclusive)
-          AND annotator_id = ${annotator_id}
-        GROUP BY TO_CHAR(DATE_TRUNC('day', TIMEZONE('Asia/Kuala_Lumpur',to_timestamp(timestamp))), 'yyyy-MM-dd'))
-        SELECT TO_CHAR(all_days.date, 'yyyy-MM-dd') AS date,
-       TO_CHAR(all_days.date, 'Day')                   AS day_of_week,
-       COALESCE(annotation_counts.annotation_count, 0) AS annotation_count
-        FROM all_days
-            LEFT JOIN annotation_counts
-        ON all_days.date = annotation_counts.date
-        ORDER BY all_days.date;
-
+        WITH dates as (SELECT (current_timestamp AT TIME ZONE 'Asia/Kuala_Lumpur' - INTERVAL '13 days')::date +
+                      generate_series(0, 13) as time)
+        SELECT to_char(dates.time, 'Day') as day_of_week, coalesce(observation.num, 0) as annotation_count
+        FROM dates
+                 LEFT JOIN (SELECT to_char(time, 'YYYY-MM-DD') as time, count(*) as num
+                            FROM (SELECT to_timestamp(timestamp) AT TIME ZONE 'Asia/Kuala_Lumpur' as time, *
+                                FROM annotation
+                                WHERE annotator_id = ${annotator_id}) as t
+                            GROUP BY to_char(time, 'YYYY-MM-DD')) as observation
+                           ON to_char(dates.time, 'YYYY-MM-DD') = observation.time
+        ORDER BY dates.time;
     `
 }
 
