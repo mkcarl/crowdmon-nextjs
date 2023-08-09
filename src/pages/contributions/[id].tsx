@@ -97,7 +97,7 @@ const ContributionsPage: NextPage<Props> = (props) => {
             <Navbar />
             <Box sx={{ width: '100vw', flex: 1, p: 4 }}>
                 <Container>
-                    <Typography variant={'h1'}>
+                    <Typography variant={'h1'} textAlign={'center'}>
                         {username}&apos;s contributions
                     </Typography>
                 </Container>
