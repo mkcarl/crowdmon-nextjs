@@ -15,18 +15,35 @@ export default function Loading() {
                 gap: 4,
             }}
         >
-            <Typography variant={'h1'}>Loading</Typography>
-            <Typography variant={'h5'} fontSize={'2rem'}>
+            <Typography variant={'h1'} textAlign={'center'}>
+                Loading
+            </Typography>
+            <Typography variant={'h5'} fontSize={'2rem'} textAlign={'center'}>
                 Please wait a moment
             </Typography>
-            <Image
-                src={
-                    'https://res.cloudinary.com/dmqxgg2mj/image/upload/v1690792032/crowdmon-website-assets/zinidnhpeexq6mx6nz8g.png'
-                }
-                alt={'loading'}
-                width={'500'}
-                height={'500'}
-            />
+            <Box
+                sx={{
+                    width: {
+                        xs: '100%',
+                        md: '500px',
+                    },
+                    height: {
+                        xs: 'auto',
+                        md: '500px',
+                    },
+                    position: 'relative',
+                    aspectRatio: '1/1',
+                }}
+            >
+                <Image
+                    src={
+                        'https://res.cloudinary.com/dmqxgg2mj/image/upload/v1690792032/crowdmon-website-assets/zinidnhpeexq6mx6nz8g.png'
+                    }
+                    alt={'loading'}
+                    fill
+                    sizes={'100%'}
+                />
+            </Box>
             <LinearProgress sx={{ width: '70%' }} />
             <Typography paragraph>
                 If this takes too long, please refresh the page or return to{' '}

@@ -1,6 +1,6 @@
-import { createTheme } from '@mui/material'
+import { createTheme, responsiveFontSizes } from '@mui/material'
 
-export const crowdmonTheme = createTheme({
+const theme = createTheme({
     palette: {
         mode: 'dark',
         primary: {
@@ -17,3 +17,5 @@ export const crowdmonTheme = createTheme({
         },
     },
 })
+
+export const crowdmonTheme = responsiveFontSizes(theme)

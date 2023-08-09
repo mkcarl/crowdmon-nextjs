@@ -68,20 +68,16 @@ export default function Home() {
                         width: { xs: '100%', md: '60%' },
                     }}
                 >
-                    <Typography variant={'h1'} fontSize={'3.5rem'}>
+                    <Typography variant={'h1'}>
                         World&apos;s first Paimon dataset collection
                     </Typography>
-                    <Typography
-                        variant={'h2'}
-                        color={'text.secondary'}
-                        fontSize={'1.5rem'}
-                    >
+                    <Typography variant={'h5'} color={'text.secondary'}>
                         Crowdmon leads the charge in curating the world&apos;s
                         most comprehensive Paimon dataset collection, and we
                         need your expertise to make it happen! Join our dynamic
                         community, where you can contribute through various
                         types of annotation, empowering the AI and data industry
-                        in unprecedented ways.
+                        in unprecedented ways!
                     </Typography>
                 </Box>
                 <Box
