@@ -2,9 +2,12 @@ import 'react-image-crop/dist/ReactCrop.css'
 import { FC, PropsWithChildren, useEffect, useRef, useState } from 'react'
 import {
     centerCrop,
+    convertToPercentCrop,
+    convertToPixelCrop,
     Crop,
     makeAspectCrop,
     PercentCrop,
+    PixelCrop,
     ReactCrop,
 } from 'react-image-crop'
 import { ImageInfo } from '@/types/crop'
@@ -24,8 +27,13 @@ import _ from 'lodash'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { firebaseAuth } from '@/lib/firebase'
 import { ScriptProps } from 'next/script'
+import * as tf from '@tensorflow/tfjs'
+import Image from 'next/image'
+import { detect } from '@/lib/prediction'
 
 export default function CroppingInterface() {
+    const [model, setModel] = useState<tf.GraphModel>()
+    const [modelLoaded, setModelLoaded] = useState(true)
     const [crop, setCrop] = useState<Crop>()
     const [imageInfo, setImageInfo] = useState<ImageInfo | null>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -39,6 +47,17 @@ export default function CroppingInterface() {
         y: NaN,
     })
     const [user, userLoading, userError] = useAuthState(firebaseAuth)
+
+    useEffect(() => {
+        const loadModel = async () => {
+            const model = (await tf.loadGraphModel(
+                '/nano_web_model/model.json'
+            )) as tf.GraphModel
+            setModel(model)
+            setModelLoaded(true)
+        }
+        loadModel().catch(console.error)
+    }, [])
 
     // when refresh is true, fetch new image
     useEffect(() => {
@@ -135,6 +154,15 @@ export default function CroppingInterface() {
         setIsLoading(false)
     }
 
+    const handleOnPredict = async () => {
+        if (!model) return
+        const data = await detect(imgRef.current!, model)
+        const paimon = data.pop()
+        if (!paimon) return
+        console.log('paimon', paimon)
+        setCrop(paimon.crop as Crop)
+    }
+
     interface DisplayInfoProps {
         title: string
         info: string
@@ -162,13 +190,13 @@ export default function CroppingInterface() {
                 gap: 2,
             }}
         >
-            <Box sx={{ display: 'flex' }}>
+            <Box sx={{ display: 'flex', aspectRatio: '16/9' }}>
                 <Box hidden={!isLoading} sx={{ flex: 1 }}>
                     <Skeleton
                         variant={'rectangular'}
                         sx={{
                             width: '100%', // Use percentage width to make it adjust to parent
-                            paddingTop: '56.25%', // 16:9 aspect ratio (56.25% = 9 / 16 * 100)
+                            height: '100%',
                         }}
                     ></Skeleton>
                 </Box>
@@ -181,6 +209,7 @@ export default function CroppingInterface() {
                                 onLoad={handleOnImageLoad}
                                 sx={{ width: 'auto', height: 'auto' }}
                                 ref={imgRef}
+                                crossOrigin={'anonymous'}
                             />
                         </ReactCrop>
                     </Box>
@@ -209,6 +238,14 @@ export default function CroppingInterface() {
                     onClick={handleOnSend}
                 >
                     Send
+                </Button>
+                <Button
+                    variant={'outlined'}
+                    color={'primary'}
+                    disabled={!modelLoaded}
+                    onClick={handleOnPredict}
+                >
+                    Predict
                 </Button>
             </Box>
             <Divider sx={{ width: '100%' }} />

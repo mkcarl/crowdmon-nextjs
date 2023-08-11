@@ -9,6 +9,12 @@ const nextConfig = {
                 port: '',
                 pathname: '/*/**',
             },
+            {
+                protocol: 'https',
+                hostname: 'images.crowdmon.mkcarl.com',
+                port: '',
+                pathname: '/*/**',
+            },
         ],
     },
 }
