@@ -20,6 +20,7 @@ import {
     Divider,
     Paper,
     Skeleton,
+    Snackbar,
     Typography,
 } from '@mui/material'
 import { ExpandMore } from '@mui/icons-material'
@@ -47,6 +48,9 @@ export default function CroppingInterface() {
         y: NaN,
     })
     const [user, userLoading, userError] = useAuthState(firebaseAuth)
+    const [snackbarOpen, setSnackbarOpen] = useState(false)
+    const [snackbarMessage, setSnackbarMessage] = useState('')
+    const [modelProcessing, setModelProcessing] = useState(false)
 
     useEffect(() => {
         const loadModel = async () => {
@@ -158,11 +162,19 @@ export default function CroppingInterface() {
     }
 
     const handleOnPredict = async () => {
+        setModelProcessing(true)
         if (!model) return
         const data = await detect(imgRef.current!, model)
         const paimon = data.pop()
-        if (!paimon) return
+        setModelProcessing(false)
+        if (!paimon) {
+            setSnackbarMessage('No Paimon detected!')
+            setSnackbarOpen(true)
+            return
+        }
         setCrop(paimon.crop as Crop)
+        setSnackbarMessage('Paimon!')
+        setSnackbarOpen(true)
     }
 
     interface DisplayInfoProps {
@@ -245,7 +257,7 @@ export default function CroppingInterface() {
                 <Button
                     variant={'outlined'}
                     color={'primary'}
-                    disabled={!modelLoaded || isLoading}
+                    disabled={!modelLoaded || isLoading || modelProcessing}
                     onClick={handleOnPredict}
                 >
                     Predict
@@ -366,6 +378,13 @@ export default function CroppingInterface() {
                     </AccordionDetails>
                 </Accordion>
             </Box>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={1000}
+                onClose={(event) => setSnackbarOpen(false)}
+                message={snackbarMessage}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            />
         </Paper>
     )
 }

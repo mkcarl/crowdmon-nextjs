@@ -1,7 +1,5 @@
 import * as tf from '@tensorflow/tfjs'
 
-// TODO : incorporate async and implement callback
-
 const modelInputSize = 640
 const preprocess = (htmlImage: HTMLImageElement) => {
     let xRatio, yRatio // ratios for boxes
