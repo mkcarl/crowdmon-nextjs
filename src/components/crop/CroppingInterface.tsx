@@ -51,13 +51,16 @@ export default function CroppingInterface() {
     useEffect(() => {
         const loadModel = async () => {
             const model = (await tf.loadGraphModel(
-                '/nano_web_model/model.json'
+                'https://mkcarl.github.io/crowdmon-yolov8-models/nano/model.json'
             )) as tf.GraphModel
             setModel(model)
-            setModelLoaded(true)
         }
         loadModel().catch(console.error)
     }, [])
+
+    useEffect(() => {
+        setModelLoaded(!!model)
+    }, [model])
 
     // when refresh is true, fetch new image
     useEffect(() => {
@@ -159,7 +162,6 @@ export default function CroppingInterface() {
         const data = await detect(imgRef.current!, model)
         const paimon = data.pop()
         if (!paimon) return
-        console.log('paimon', paimon)
         setCrop(paimon.crop as Crop)
     }
 
@@ -221,6 +223,7 @@ export default function CroppingInterface() {
                     width: '100%',
                     justifyContent: 'center',
                     gap: 4,
+                    flexWrap: 'wrap',
                 }}
             >
                 <Button
@@ -242,7 +245,7 @@ export default function CroppingInterface() {
                 <Button
                     variant={'outlined'}
                     color={'primary'}
-                    disabled={!modelLoaded}
+                    disabled={!modelLoaded || isLoading}
                     onClick={handleOnPredict}
                 >
                     Predict

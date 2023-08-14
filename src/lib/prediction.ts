@@ -1,5 +1,7 @@
 import * as tf from '@tensorflow/tfjs'
 
+// TODO : incorporate async and implement callback
+
 const modelInputSize = 640
 const preprocess = (htmlImage: HTMLImageElement) => {
     let xRatio, yRatio // ratios for boxes
@@ -31,11 +33,7 @@ const preprocess = (htmlImage: HTMLImageElement) => {
 }
 
 //@ts-ignore
-const detect = async (
-    source: HTMLImageElement,
-    model: tf.GraphModel,
-    callback = () => {}
-) => {
+const detect = async (source: HTMLImageElement, model: tf.GraphModel) => {
     tf.engine().startScope() // start scoping tf engine
     const [input, xRatio, yRatio] = preprocess(source) // preprocess image
 
@@ -78,13 +76,11 @@ const detect = async (
     const classes_data = classes.gather(nms, 0).dataSync() // indexing classes by nms index
     const data = []
 
-    console.log('boxes_data', boxes_data)
     for (let i = 0; i < scores_data.length; i++) {
         const y1 = (boxes_data[i * 4] / modelInputSize) * 100 * yRatio
         const x1 = (boxes_data[i * 4 + 1] / modelInputSize) * 100 * xRatio
         const y2 = (boxes_data[i * 4 + 2] / modelInputSize) * 100 * yRatio
         const x2 = (boxes_data[i * 4 + 3] / modelInputSize) * 100 * xRatio
-        console.log(x1, y1, x2, y2)
         data.push({
             crop: {
                 x: x1,
@@ -99,8 +95,6 @@ const detect = async (
     }
 
     tf.dispose([res, transRes, boxes, scores, classes, nms]) // clear memory
-
-    callback()
 
     tf.engine().endScope() // end of scoping
     return data

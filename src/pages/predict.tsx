@@ -115,7 +115,9 @@ const Predict: NextPage = (data: any) => {
 
     useEffect(() => {
         const loadModel = async () => {
-            const model = await tf.loadGraphModel('/nano_web_model/model.json')
+            const model = await tf.loadGraphModel(
+                '/nano_web_model/nano-model.json'
+            )
             setModel(model)
             setModelLoading(false)
         }
