@@ -18,9 +18,11 @@ import {
     Box,
     Button,
     Divider,
+    FormControlLabel,
     Paper,
     Skeleton,
     Snackbar,
+    Switch,
     Typography,
 } from '@mui/material'
 import { ExpandMore } from '@mui/icons-material'
@@ -51,6 +53,7 @@ export default function CroppingInterface() {
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
     const [modelProcessing, setModelProcessing] = useState(false)
+    const [aiEnabled, setAiEnabled] = useState(false)
 
     useEffect(() => {
         const loadModel = async () => {
@@ -100,6 +103,12 @@ export default function CroppingInterface() {
             })
         }
     }, [crop])
+
+    useEffect(() => {
+        if (aiEnabled) {
+            handleOnPredict()
+        }
+    }, [aiEnabled])
 
     const handleOnSend = async () => {
         setRefresh(true)
@@ -159,6 +168,9 @@ export default function CroppingInterface() {
             )
         )
         setIsLoading(false)
+        if (aiEnabled) {
+            handleOnPredict()
+        }
     }
 
     const handleOnPredict = async () => {
@@ -175,6 +187,10 @@ export default function CroppingInterface() {
         setCrop(paimon.crop as Crop)
         setSnackbarMessage('Paimon!')
         setSnackbarOpen(true)
+    }
+
+    const handleOnAiToggle = () => {
+        setAiEnabled(!aiEnabled)
     }
 
     interface DisplayInfoProps {
@@ -254,14 +270,15 @@ export default function CroppingInterface() {
                 >
                     Send
                 </Button>
-                <Button
-                    variant={'outlined'}
-                    color={'primary'}
-                    disabled={!modelLoaded || isLoading || modelProcessing}
-                    onClick={handleOnPredict}
-                >
-                    Predict
-                </Button>
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={aiEnabled}
+                            onChange={handleOnAiToggle}
+                        />
+                    }
+                    label="AI detection"
+                />
             </Box>
             <Divider sx={{ width: '100%' }} />
             <Box id={'image-detail'} sx={{ width: '100%' }}>
