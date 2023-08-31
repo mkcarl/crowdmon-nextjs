@@ -1,13 +1,10 @@
 import 'react-image-crop/dist/ReactCrop.css'
-import { FC, PropsWithChildren, useEffect, useRef, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import {
     centerCrop,
-    convertToPercentCrop,
-    convertToPixelCrop,
     Crop,
     makeAspectCrop,
     PercentCrop,
-    PixelCrop,
     ReactCrop,
 } from 'react-image-crop'
 import { ImageInfo } from '@/types/crop'
@@ -29,9 +26,7 @@ import { ExpandMore } from '@mui/icons-material'
 import _ from 'lodash'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { firebaseAuth } from '@/lib/firebase'
-import { ScriptProps } from 'next/script'
 import * as tf from '@tensorflow/tfjs'
-import Image from 'next/image'
 import { detect } from '@/lib/prediction'
 
 export default function CroppingInterface() {
