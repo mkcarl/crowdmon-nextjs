@@ -1,5 +1,5 @@
 import 'react-image-crop/dist/ReactCrop.css'
-import { FC, PropsWithChildren, useEffect, useRef, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import {
     centerCrop,
     Crop,
@@ -15,17 +15,23 @@ import {
     Box,
     Button,
     Divider,
+    FormControlLabel,
     Paper,
     Skeleton,
+    Snackbar,
+    Switch,
     Typography,
 } from '@mui/material'
 import { ExpandMore } from '@mui/icons-material'
 import _ from 'lodash'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { firebaseAuth } from '@/lib/firebase'
-import { ScriptProps } from 'next/script'
+import * as tf from '@tensorflow/tfjs'
+import { detect } from '@/lib/prediction'
 
 export default function CroppingInterface() {
+    const [model, setModel] = useState<tf.GraphModel>()
+    const [modelLoaded, setModelLoaded] = useState(true)
     const [crop, setCrop] = useState<Crop>()
     const [imageInfo, setImageInfo] = useState<ImageInfo | null>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -39,6 +45,24 @@ export default function CroppingInterface() {
         y: NaN,
     })
     const [user, userLoading, userError] = useAuthState(firebaseAuth)
+    const [snackbarOpen, setSnackbarOpen] = useState(false)
+    const [snackbarMessage, setSnackbarMessage] = useState('')
+    const [modelProcessing, setModelProcessing] = useState(false)
+    const [aiEnabled, setAiEnabled] = useState(false)
+
+    useEffect(() => {
+        const loadModel = async () => {
+            const model = (await tf.loadGraphModel(
+                'https://mkcarl.github.io/crowdmon-yolov8-models/nano/model.json'
+            )) as tf.GraphModel
+            setModel(model)
+        }
+        loadModel().catch(console.error)
+    }, [])
+
+    useEffect(() => {
+        setModelLoaded(!!model)
+    }, [model])
 
     // when refresh is true, fetch new image
     useEffect(() => {
@@ -74,6 +98,12 @@ export default function CroppingInterface() {
             })
         }
     }, [crop])
+
+    useEffect(() => {
+        if (aiEnabled) {
+            handleOnPredict()
+        }
+    }, [aiEnabled])
 
     const handleOnSend = async () => {
         setRefresh(true)
@@ -133,6 +163,29 @@ export default function CroppingInterface() {
             )
         )
         setIsLoading(false)
+        if (aiEnabled) {
+            handleOnPredict()
+        }
+    }
+
+    const handleOnPredict = async () => {
+        setModelProcessing(true)
+        if (!model) return
+        const data = await detect(imgRef.current!, model)
+        const paimon = data.pop()
+        setModelProcessing(false)
+        if (!paimon) {
+            setSnackbarMessage('No Paimon detected!')
+            setSnackbarOpen(true)
+            return
+        }
+        setCrop(paimon.crop as Crop)
+        setSnackbarMessage('Paimon!')
+        setSnackbarOpen(true)
+    }
+
+    const handleOnAiToggle = () => {
+        setAiEnabled(!aiEnabled)
     }
 
     interface DisplayInfoProps {
@@ -162,13 +215,13 @@ export default function CroppingInterface() {
                 gap: 2,
             }}
         >
-            <Box sx={{ display: 'flex' }}>
+            <Box sx={{ display: 'flex', aspectRatio: '16/9' }}>
                 <Box hidden={!isLoading} sx={{ flex: 1 }}>
                     <Skeleton
                         variant={'rectangular'}
                         sx={{
                             width: '100%', // Use percentage width to make it adjust to parent
-                            paddingTop: '56.25%', // 16:9 aspect ratio (56.25% = 9 / 16 * 100)
+                            height: '100%',
                         }}
                     ></Skeleton>
                 </Box>
@@ -181,6 +234,7 @@ export default function CroppingInterface() {
                                 onLoad={handleOnImageLoad}
                                 sx={{ width: 'auto', height: 'auto' }}
                                 ref={imgRef}
+                                crossOrigin={'anonymous'}
                             />
                         </ReactCrop>
                     </Box>
@@ -192,6 +246,7 @@ export default function CroppingInterface() {
                     width: '100%',
                     justifyContent: 'center',
                     gap: 4,
+                    flexWrap: 'wrap',
                 }}
             >
                 <Button
@@ -210,6 +265,15 @@ export default function CroppingInterface() {
                 >
                     Send
                 </Button>
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={aiEnabled}
+                            onChange={handleOnAiToggle}
+                        />
+                    }
+                    label="AI detection"
+                />
             </Box>
             <Divider sx={{ width: '100%' }} />
             <Box id={'image-detail'} sx={{ width: '100%' }}>
@@ -326,6 +390,13 @@ export default function CroppingInterface() {
                     </AccordionDetails>
                 </Accordion>
             </Box>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={1000}
+                onClose={(event) => setSnackbarOpen(false)}
+                message={snackbarMessage}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            />
         </Paper>
     )
 }
