@@ -1,7 +1,7 @@
 import * as tf from '@tensorflow/tfjs'
 
 const modelInputSize = 640
-const preprocess = (htmlImage: HTMLImageElement) => {
+const preprocess = (htmlImage) => {
     let xRatio, yRatio // ratios for boxes
 
     const input = tf.tidy(() => {
@@ -31,7 +31,7 @@ const preprocess = (htmlImage: HTMLImageElement) => {
 }
 
 //@ts-ignore
-const detect = async (source: HTMLImageElement, model: tf.GraphModel) => {
+const detect = async (source, model) => {
     tf.engine().startScope() // start scoping tf engine
     const [input, xRatio, yRatio] = preprocess(source) // preprocess image
 
