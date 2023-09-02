@@ -1,38 +1,23 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Crowdmon 
 
-## Getting Started
+[Crowdmon](https://app.crowdmon.mkcarl.com) is a built using Next.js and MUI to provide a simple and easily accesible 
+way for users to contribute in Paimon dataset collection. 
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Motivations
+### Why/Who is Paimon?
+[Paimon](https://genshin-impact.fandom.com/wiki/Paimon) is a character from Genshin Impact. There are no readily 
+available datasets of Paimon, so why not. I have plans to further study about 
+machine/deep learning methods using this dataset.
+### Why web app? 
+Web apps are easily accessible via any device with a browser. This means anyone with a mobile phone, laptop or tablet
+can contribute in the dataset collection.
+___ 
+## How to contribute
+1. Go to [Crowdmon](https://app.crowdmon.mkcarl.com).
+2. Login using your Google account.
+3. Select any type of annotation you want to contribute in (currently only bounding boxes are available).
+   1. ![Demonstration](https://i.imgur.com/Xl5WGNs.mp4)
+5. Click the "Contribution" logo in the top right corner to view all your contributions.
+___
+## Bugs/Suggestions
+If you have any bugs or suggestions, please open an issue in this repository. 
