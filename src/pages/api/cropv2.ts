@@ -12,6 +12,7 @@ interface Request extends NextApiRequest {
         width?: number
         height?: number
         annotatorId?: string
+        duration?: number
     }
 }
 
@@ -48,7 +49,8 @@ export default async function handler(req: Request, res: Response) {
         if (!annotationId) {
             annotationId = await newAnnotation(
                 req.body.imageId,
-                req.body.annotatorId
+                req.body.annotatorId,
+                req.body.duration ?? 0
             )
         }
         if (annotationId) {
@@ -82,11 +84,15 @@ async function getAnnotation(imageId: number) {
     return annotations.pop()?.annotation_id ?? null
 }
 
-async function newAnnotation(imageId: number, annotatorId: string) {
+async function newAnnotation(
+    imageId: number,
+    annotatorId: string,
+    duration: number
+) {
     type QueryResults = { annotationId: number }[]
     const annotationId = await sql<QueryResults>`
-            INSERT INTO annotation (image_id, annotator_id, seen, valid, timestamp)
-            values (${imageId}, ${annotatorId}, false, false, ${dayjs().unix()})
+            INSERT INTO annotation (image_id, annotator_id, seen, valid, timestamp, duration)
+            values (${imageId}, ${annotatorId}, false, false, ${dayjs().unix()}, ${duration})
             RETURNING annotation_id as "annotationId";
         `
     return annotationId.pop()?.annotationId ?? null

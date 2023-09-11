@@ -49,6 +49,7 @@ export default function CroppingInterface() {
     const [snackbarMessage, setSnackbarMessage] = useState('')
     const [modelProcessing, setModelProcessing] = useState(false)
     const [aiEnabled, setAiEnabled] = useState(false)
+    const [startTime, setStartTime] = useState(new Date().valueOf())
 
     useEffect(() => {
         const loadModel = async () => {
@@ -123,6 +124,7 @@ export default function CroppingInterface() {
     }
 
     const submitCrop = async (crop: Crop | null, imageId: number) => {
+        const cropDuration = new Date().valueOf() - startTime
         await fetch('/api/cropv2', {
             method: 'POST',
             headers: {
@@ -136,6 +138,7 @@ export default function CroppingInterface() {
                 y: crop?.y ?? null,
                 width: crop?.width ?? null,
                 height: crop?.height ?? null,
+                duration: cropDuration,
             }),
         })
     }
@@ -166,6 +169,7 @@ export default function CroppingInterface() {
         if (aiEnabled) {
             handleOnPredict()
         }
+        setStartTime(new Date().valueOf())
     }
 
     const handleOnPredict = async () => {
