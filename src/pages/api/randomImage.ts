@@ -19,7 +19,7 @@ export default async function handler(req: Request, res: Response) {
 
 async function getNonAnnotatedImage(): Promise<ImageInfo | null> {
     const images = await sql<ImageInfo[]>`
-        SELECT source, url, image_name as "imageName", video_name as "videoName", image.image_id as "imageId"
+        SELECT source, storage_url, image_name as "imageName", image.image_id as "imageId"
         FROM image
                  LEFT JOIN annotation on image.image_id = annotation.image_id
         WHERE annotation.annotation_id IS NULL
